@@ -1,5 +1,5 @@
 import { ticketMessageFileTable, ticketMessageTable, TicketStatus, ticketTable } from "db/schema";
-import { eq, InferInsertModel, InferSelectModel } from "drizzle-orm";
+import { and, eq, InferInsertModel, InferSelectModel } from "drizzle-orm";
 import { PostgresJsDatabase } from "drizzle-orm/postgres-js";
 
 export type TicketInsertModel = InferInsertModel<typeof ticketTable>;
@@ -37,6 +37,18 @@ export class DbTicketService {
       .execute();
 
     return ticket ?? null;
+  }
+
+  public async getOpenTicketsByUserId (userId: string, categoryId?: string): Promise<TicketSelectModel[]> {
+    return await this.db
+      .select()
+      .from(ticketTable)
+      .where(and(
+        eq(ticketTable.userId, userId),
+        categoryId != null ? eq(ticketTable.categoryId, categoryId) : undefined,
+        eq(ticketTable.status, 'open'),
+      ))
+      .execute();
   }
 
   public async setTicketStatus (channelId: string, status: TicketStatus): Promise<void> {

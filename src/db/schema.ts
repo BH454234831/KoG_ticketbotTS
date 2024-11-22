@@ -2,7 +2,7 @@ import { bigint, foreignKey, index, jsonb, pgEnum, pgTable, varchar } from "driz
 import { Language } from "i18n/instance";
 import { bigintString, bytea, createdAtTimestampDate, deletedAtTimestampDate, updatedAtTimestampDate } from "utils/drizzle";
 
-export const ticketStatusValues = ['open', 'accepted', 'rejected', 'deleted'] as const;
+export const ticketStatusValues = ['open', 'accept', 'reject', 'delete'] as const;
 export type TicketStatus = typeof ticketStatusValues[number];
 export const ticketStatusEnum = pgEnum('ticket_status', ticketStatusValues);
 
@@ -11,6 +11,7 @@ export const ticketCategoryTable = pgTable('ticket_category', {
   channelId: bigintString('channel_id').notNull(),
   name: jsonb('name').$type<Record<Language, string>>().notNull(),
   welcome: jsonb('welcome').$type<Record<Language, string>>().notNull(),
+  requiredRoleIds: bigintString('required_role_id').array(),
 
   createdAt: createdAtTimestampDate,
   updatedAt: updatedAtTimestampDate,
@@ -21,7 +22,7 @@ export const ticketTable = pgTable('ticket', {
   channelId: bigintString('channel_id').notNull().primaryKey(),
   userId: bigintString('user_id').notNull(),
   language: varchar('language', { length: 8 }).notNull(),
-  category: bigintString('category').notNull(),
+  categoryId: bigintString('category').notNull(),
   status: ticketStatusEnum('ticket_status').notNull().default('open'),
 
   userName: varchar('user_name', { length: 64 }).notNull(),
@@ -29,7 +30,7 @@ export const ticketTable = pgTable('ticket', {
 
   createdAt: createdAtTimestampDate,
 }, (table) => [
-  foreignKey({ name: 'fk__ticket__category', columns: [table.category], foreignColumns: [ticketCategoryTable.id] }).onUpdate('cascade').onDelete('cascade'),
+  foreignKey({ name: 'fk__ticket__category_id', columns: [table.categoryId], foreignColumns: [ticketCategoryTable.id] }).onUpdate('cascade').onDelete('cascade'),
   index('idx__ticket__created_at').on(table.createdAt),
   index('idx__ticket__user_id').on(table.userId, table.createdAt),
   index('idx__ticket__channel_id').on(table.channelId),
@@ -54,8 +55,9 @@ export const ticketMessageFileTable = pgTable('ticket_message_file', {
   messageId: bigintString('message_id').notNull(),
 
   file: bytea('file').notNull(),
-  mime: varchar('mime', { length: 256 }).notNull(),
+  mime: varchar('mime', { length: 32 }).notNull(),
   name: varchar('name', { length: 256 }).notNull(),
+  url: varchar('url', { length: 256 }).notNull(),
 
   createdAt: createdAtTimestampDate,
 }, (table) => [
