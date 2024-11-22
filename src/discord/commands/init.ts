@@ -2,6 +2,7 @@ import { ActionRowBuilder, ButtonBuilder, ButtonStyle, CommandInteraction } from
 import { Discord, Slash } from "discordx";
 import { i18n, languages } from "i18n/instance";
 import _ from "lodash";
+import { createButtons } from "utils/discord/buttons";
 
 @Discord()
 export class InitCommands {
@@ -20,20 +21,13 @@ export class InitCommands {
       ephemeral: true,
     })
 
-    const buttonRows = _.chunk(languages, 5).map(langs => {
-      const buttons = langs.map(lang => {
-        return new ButtonBuilder()
-          .setCustomId(lang)
-          .setLabel(i18n.__('{{ticket_buttons.labels}}', undefined, lang))
-          .setStyle(ButtonStyle.Primary)
-          .setEmoji({ name: i18n.__('{{ticket_buttons.emojis}}', undefined, lang) });
-      });
-
-      const buttonGroup = new ActionRowBuilder<ButtonBuilder>()
-        .addComponents(...buttons);
-
-      return buttonGroup;
-    });
+    const buttonRows = createButtons(languages.map(lang => {
+      return {
+        id: `language@${lang}`,
+        label: i18n.__('{{ticket_buttons.labels}}', undefined, lang),
+        emoji: i18n.__('{{ticket_buttons.emojis}}', undefined, lang),
+      };
+    }));
 
     await interaction.channel.send({
       content: i18n.__('{{ticket_buttons.text}}', undefined),

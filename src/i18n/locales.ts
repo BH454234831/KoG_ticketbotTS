@@ -23,4 +23,18 @@ export default {
   'ticket_buttons.success': {
     'en': '**Ticket buttons created successfully.**',
   },
+  'category_buttons.labels': {
+    'en': 'Select a category',
+    'ru': 'Выберите категорию',
+    'fr': 'Choisissez une categorie',
+    'de': 'Kategorie auswählen',
+    'tr': 'Kategori seçin',
+  },
+  'category_buttons.success': {
+    'en': 'Ticket created successfully. <#{{channelId}}>',
+    'ru': 'Тикет создан успешно. <#{{channelId}}>',
+    'fr': 'Ticket cree avec success. <#{{channelId}}>',
+    'de': 'Ticket erfolgreich erstellt. <#{{channelId}}>',
+    'tr': 'Tiket basariyla olusturuldu. <#{{channelId}}>',
+  },
 } as const satisfies LocaleRecords;

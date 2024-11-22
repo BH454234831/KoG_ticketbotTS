@@ -19,7 +19,9 @@ const envShape = z.object({
   LOGGER_LEVEL: z.enum(['error', 'warn', 'info', 'debug']).default('info'),
 
   DISCORD_TOKEN: z.string().min(1),
-  DISCORD_TRANSCRIPT_CHANNELS: z.string().min(1),
+  DISCORD_CLIENT_ID: z.string().min(1),
+  
+  TRANSCRIPT_CHANNELS: z.string().min(1),
 
   POSTGRES_SERVER: z.string().min(1),
   POSTGRES_PORT: zodStringInt.pipe(z.number().min(1).max(65535)),

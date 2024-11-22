@@ -9,7 +9,7 @@ export const dbConnection = postgres(config.POSTGRES_URL, {
   },
 });
 
-export const dbManage = drizzle(dbConnection, {
+export const db = drizzle(dbConnection, {
   logger: {
     logQuery: (query, params) => {
       // logger.debug(`Query: ${query}\nParams: ${JSON.stringify(params)}`);

@@ -8,6 +8,7 @@ export const ticketStatusEnum = pgEnum('ticket_status', ticketStatusValues);
 
 export const ticketCategoryTable = pgTable('ticket_category', {
   id: bigintString('id').primaryKey(),
+  channelId: bigintString('channel_id').notNull(),
   name: jsonb('name').$type<Record<Language, string>>().notNull(),
   welcome: jsonb('welcome').$type<Record<Language, string>>().notNull(),
 
