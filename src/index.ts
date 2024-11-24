@@ -1,10 +1,12 @@
 import { config } from 'config';
-import { GatewayIntentBits, type Interaction, InteractionType } from 'discord.js';
+import { GatewayIntentBits, InteractionType } from 'discord.js';
 import { Client } from 'discordx';
 import { consoleWinstonTransport, fileErrorWinstonTransport, logger } from 'logger';
 import { dirname, importx } from '@discordx/importer';
 import { register } from 'tsx/esm/api';
 import 'reflect-metadata';
+import { interactionReplyError } from 'utils/discord/interaction';
+
 // eslint-disable-next-line @typescript-eslint/naming-convention
 const __dirname = dirname(import.meta.url);
 
@@ -29,25 +31,6 @@ client.on('warn', message => {
 client.on('error', message => {
   logger.error(message);
 });
-
-async function interactionReplyError (interaction: Interaction, error: any): Promise<void> {
-  try {
-    if (interaction.isRepliable()) {
-      if (interaction.replied || interaction.deferred) {
-        await interaction.editReply({
-          content: 'There was an error while executing this command.',
-        });
-      } else {
-        await interaction.reply({
-          content: 'There was an error while executing this command.',
-          ephemeral: true,
-        });
-      }
-    }
-  } catch (err) {
-    logger.error(err);
-  }
-}
 
 // eslint-disable-next-line @typescript-eslint/no-misused-promises
 client.on('interactionCreate', async interaction => {

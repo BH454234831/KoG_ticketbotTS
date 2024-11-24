@@ -3,6 +3,8 @@ import { Discord, Slash } from 'discordx';
 import { i18n } from 'i18n/instance';
 import { languages } from 'i18n/constants';
 import { createButtons } from 'utils/discord/buttons';
+import { IssueError } from 'error';
+import { resolveInteractionErrorData } from 'utils/discord/resolve';
 
 @Discord()
 export class InitCommands {
@@ -13,13 +15,16 @@ export class InitCommands {
     dmPermission: false,
   })
   public async doticketbutton (interaction: CommandInteraction<'cached'>): Promise<void> {
+    const errorData = resolveInteractionErrorData(interaction);
+
     if (interaction.channel?.isSendable() !== true) {
-      return;
+      throw new IssueError({
+        message: '[doticketbutton] Channel is not sendable',
+        data: errorData,
+      });
     }
 
-    await interaction.deferReply({
-      ephemeral: true,
-    });
+    await interaction.deferReply({ ephemeral: true });
 
     const buttonRows = createButtons(languages.map(lang => {
       return {
