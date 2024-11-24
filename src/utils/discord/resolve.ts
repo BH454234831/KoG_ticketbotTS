@@ -1,4 +1,4 @@
-import { GuildMember, Interaction } from "discord.js";
+import { BaseInteraction, GuildMember, Interaction } from "discord.js";
 
 export async function resolveInteractionMemberOrThrow (interaction: Interaction): Promise<GuildMember | null> {
   if (interaction.member instanceof GuildMember) return interaction.member;
@@ -22,7 +22,7 @@ export type ResolvedMemberData = {
   displayAvatarUrl: string | null;
 };
 
-export async function resolveInteractionMemberData (interaction: Interaction, userId: string = interaction.user.id): Promise<ResolvedMemberData> {
+export async function resolveInteractionMemberData (interaction: BaseInteraction<'cached'>, userId: string = interaction.user.id): Promise<ResolvedMemberData> {
   if (interaction.guild == null) throw new Error('guild is null');
   const member = interaction.guild.members.cache.get(userId) ?? await interaction.guild.members.fetch(userId).catch(() => null);
   if (member != null) return {
