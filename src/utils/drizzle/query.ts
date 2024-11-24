@@ -24,8 +24,16 @@ export function nullable (column: SQLWrapper, option: NullableOption | null | un
       : undefined;
 }
 
+export function coalesce (value1: SQLWrapper, value2: SQLWrapper): SQL {
+  return sql`coalesce(${value1}, ${value2})`;
+}
+
 export function excluded (column: PgColumn): SQL {
   return sql.raw(`excluded."${column.name}"`);
+}
+
+export function isDistinct (value1: SQLWrapper, value2: SQLWrapper): SQL {
+  return sql`${value1} IS DISTINCT FROM ${value2}`;
 }
 
 export function pickExcluded<T extends Table, Columns extends keyof T['_']['columns']> (table: T, ...columns: Columns[]): Record<Columns, SQL> {

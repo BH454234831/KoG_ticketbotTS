@@ -16,11 +16,25 @@ export async function resolveInteractionMember (interaction: Interaction): Promi
   }
 }
 
-export async function resolveInteractionDisplayName (interaction: Interaction, userId: string = interaction.user.id): Promise<string> {
+export type ResolvedMemberData = {
+  displayName: string;
+  displayAvatarUrl: string | null;
+};
+
+export async function resolveInteractionMemberData (interaction: Interaction, userId: string = interaction.user.id): Promise<ResolvedMemberData> {
   if (interaction.guild == null) throw new Error('guild is null');
   const member = interaction.guild.members.cache.get(userId) ?? await interaction.guild.members.fetch(userId).catch(() => null);
-  if (member != null) return member.displayName;
+  if (member != null) return {
+    displayName: member.displayName,
+    displayAvatarUrl: member.displayAvatarURL(),
+  };
   const user = await interaction.client.users.fetch(userId).catch(() => null);
-  if (user != null) return user.username;
-  return userId;
+  if (user != null) return {
+    displayName: user.username,
+    displayAvatarUrl: user.displayAvatarURL(),
+  }
+  return {
+    displayName: userId,
+    displayAvatarUrl: null,
+  };
 }

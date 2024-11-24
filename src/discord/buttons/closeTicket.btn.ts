@@ -5,7 +5,7 @@ import { ThreadModeratorGuard } from "discord/guards";
 import { ButtonComponent, Discord, Guard } from "discordx";
 import { i18n, Language } from "i18n/instance";
 import { createButtons } from "utils/discord/buttons";
-import { resolveInteractionDisplayName, resolveInteractionMember } from "utils/discord/resolve";
+import { resolveInteractionMemberData } from "utils/discord/resolve";
 import discordTranscripts from 'discord-html-transcripts';
 
 export type TicketCloseAction = 'accept' | 'reject' | 'delete' | 'cancel';
@@ -87,18 +87,18 @@ export class CloseTicketButton {
     if (transcriptChannel == null) return;
     if (!transcriptChannel.isTextBased()) return;
 
-    const ticketDisplayName = await resolveInteractionDisplayName(interaction, ticket.userId);
-    const displayName = await resolveInteractionDisplayName(interaction);
+    const ticketMemberData = await resolveInteractionMemberData(interaction, ticket.userId);
+    const memberData = await resolveInteractionMemberData(interaction);
 
     const transcript = await discordTranscripts.createTranscript(interaction.channel, {
       saveImages: true,
       poweredBy: false,
-      filename: `${ticket.createdAt.toUTCString()}_${language}-${category.name['en']}_${ticketDisplayName}.html`,
-      footerText: `${ticket.createdAt.toUTCString()}\n${language}-${category.name['en']}\n${ticketDisplayName}`,
+      filename: `${ticket.createdAt.toUTCString()}_${language}-${category.name['en']}_${ticketMemberData.displayName}.html`,
+      footerText: `${ticket.createdAt.toUTCString()}\n${language}-${category.name['en']}\n${ticketMemberData.displayName}`,
     });
 
     await transcriptChannel.send({
-      content: `Ticket ${language} ${category.name['en']} by <@${ticket.userId}> (${ticketDisplayName}) deleted by <@${interaction.user.id}> (${displayName})`,
+      content: `Ticket ${language} ${category.name['en']} by <@${ticket.userId}> (${ticketMemberData.displayName}) deleted by <@${interaction.user.id}> (${memberData.displayName})`,
       files: [transcript],
     });
   }

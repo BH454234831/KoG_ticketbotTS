@@ -1,10 +1,19 @@
-import { bigint, foreignKey, index, jsonb, pgEnum, pgTable, varchar } from "drizzle-orm/pg-core";
+import { bigint, foreignKey, index, jsonb, pgEnum, pgTable, primaryKey, varchar } from "drizzle-orm/pg-core";
 import { Language } from "i18n/instance";
 import { bigintString, bytea, createdAtTimestampDate, deletedAtTimestampDate, updatedAtTimestampDate } from "utils/drizzle";
 
 export const ticketStatusValues = ['open', 'accept', 'reject', 'delete'] as const;
 export type TicketStatus = typeof ticketStatusValues[number];
 export const ticketStatusEnum = pgEnum('ticket_status', ticketStatusValues);
+
+export const userTable = pgTable('user', {
+  id: bigintString('id').primaryKey(),
+  displayName: varchar('display_name', { length: 64 }),
+  displayAvatarUrl: varchar('display_icon_url', { length: 256 }),
+
+  createdAt: createdAtTimestampDate,
+  updatedAt: updatedAtTimestampDate,
+});
 
 export const ticketCategoryTable = pgTable('ticket_category', {
   id: bigintString('id').primaryKey(),
@@ -25,28 +34,44 @@ export const ticketTable = pgTable('ticket', {
   categoryId: bigintString('category').notNull(),
   status: ticketStatusEnum('ticket_status').notNull().default('open'),
 
-  userName: varchar('user_name', { length: 64 }).notNull(),
-  userIcon: varchar('user_icon', { length: 256 }).notNull(),
-
   createdAt: createdAtTimestampDate,
+  updatedAt: updatedAtTimestampDate,
 }, (table) => [
   foreignKey({ name: 'fk__ticket__category_id', columns: [table.categoryId], foreignColumns: [ticketCategoryTable.id] }).onUpdate('cascade').onDelete('cascade'),
+  foreignKey({ name: 'fk__ticket__user_id', columns: [table.userId], foreignColumns: [userTable.id] }).onUpdate('cascade').onDelete('cascade'),
   index('idx__ticket__created_at').on(table.createdAt),
   index('idx__ticket__user_id').on(table.userId, table.createdAt),
   index('idx__ticket__channel_id').on(table.channelId),
+]);
+
+export const ticketUserTable = pgTable('ticket_user', {
+  channelId: bigintString('id').notNull(),
+  userId: bigintString('user_id').notNull(),
+
+  createdAt: createdAtTimestampDate,
+  updatedAt: updatedAtTimestampDate,
+  deletedAt: deletedAtTimestampDate,
+}, (table) => [
+  primaryKey({ name: 'pk__ticket_user', columns: [table.channelId, table.userId] }),
+  foreignKey({ name: 'fk__ticket_user__channel_id', columns: [table.channelId], foreignColumns: [ticketTable.channelId] }).onUpdate('cascade').onDelete('cascade'),
+  foreignKey({ name: 'fk__ticket_user__user_id', columns: [table.userId], foreignColumns: [userTable.id] }).onUpdate('cascade').onDelete('cascade'),
+  index('idx__ticket_user__channel_id').on(table.channelId),
+  index('idx__ticket_user__user_id').on(table.userId),
 ]);
 
 export const ticketMessageTable = pgTable('ticket_message', {
   messageId: bigintString('message_id').primaryKey(),
   channelId: bigintString('channel_id').notNull(),
   userId: bigintString('user_id').notNull(),
-  userName: varchar('user_name', { length: 64 }).notNull(),
-  userIcon: varchar('user_icon', { length: 256 }).notNull(),
+  displayName: varchar('user_name', { length: 64 }).notNull(),
+  displayAvatarUrl: varchar('user_icon', { length: 256 }).notNull(),
 
   createdAt: createdAtTimestampDate,
 }, (table) => [
   foreignKey({ name: 'fk__ticket_message__channel_id', columns: [table.channelId], foreignColumns: [ticketTable.channelId] }).onUpdate('cascade').onDelete('cascade'),
-  index('idx__ticket_message__channel_id').on(table.channelId, table.userId),
+  foreignKey({ name: 'fk__ticket_message__user_id', columns: [table.userId], foreignColumns: [userTable.id] }).onUpdate('cascade').onDelete('cascade'),
+  index('idx__ticket_message__channel_id').on(table.channelId),
+  index('idx__ticket_message__user_id').on(table.userId),
   index('idx__ticket_message__created_at').on(table.createdAt),
 ]);
 

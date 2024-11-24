@@ -3,7 +3,7 @@ import { ButtonInteraction, ChannelType, PermissionFlagsBits } from "discord.js"
 import { ButtonComponent, Discord } from "discordx";
 import { i18n, Language } from "i18n/instance";
 import { createButtons } from "utils/discord/buttons";
-import { resolveInteractionDisplayName, resolveInteractionMember } from "utils/discord/resolve";
+import { resolveInteractionMemberData } from "utils/discord/resolve";
 
 @Discord()
 export class OpenTicketButtons {
@@ -31,10 +31,10 @@ export class OpenTicketButtons {
 
     if (clientPermissions.missing(PermissionFlagsBits.CreatePrivateThreads | PermissionFlagsBits.ManageThreads | PermissionFlagsBits.ManageChannels)) return;
 
-    const memberDisplayName = await resolveInteractionDisplayName(interaction);
+    const memberData = await resolveInteractionMemberData(interaction);
 
     const thread = await channel.threads.create({
-      name: `${language}-${memberDisplayName}`,
+      name: `${language}-${memberData.displayName}`,
       type: ChannelType.PrivateThread as any,
       invitable: false as any,
     });
@@ -50,14 +50,19 @@ export class OpenTicketButtons {
 
     await thread.members.add(interaction.user);
 
-    await dbTicketService.createTicket({
-      channelId: thread.id,
-      userId: interaction.user.id,
-      language,
-      categoryId,
-      userName: interaction.user.username,
-      userIcon: interaction.user.displayAvatarURL(),
-    });
+    await dbTicketService.createTicket(
+      {
+        channelId: thread.id,
+        userId: interaction.user.id,
+        language,
+        categoryId,
+      },
+      {
+        id: interaction.user.id,
+        displayName: memberData.displayName,
+        displayAvatarUrl: memberData.displayAvatarUrl,
+      }
+    );
 
     const buttonRows = createButtons([
       { id: `thread@${language}@close`, label: i18n.__('{{thread_buttons.close.labels}}', undefined, language), emoji: '🔒' },
