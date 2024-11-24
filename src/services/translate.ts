@@ -1,5 +1,5 @@
-import { type Language, languages } from "i18n/constants";
-import { logger } from "logger";
+import { type Language, languages } from 'i18n/constants';
+import { logger } from 'logger';
 
 export class TranslateService {
   public async translate (text: string, language: string): Promise<string> {
@@ -8,7 +8,7 @@ export class TranslateService {
     const translatedData = await response.json() as any;
     const translatedText = translatedData[0][0][0] as string;
     logger.debug(`[TranslateService][translate] ${language} -> ${JSON.stringify(translatedData)} -> ${translatedText}`);
-    
+
     return translatedText;
   }
 

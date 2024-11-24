@@ -1,8 +1,8 @@
-import { ticketCategoryTable } from "db/schema";
-import { and, eq, ilike, InferInsertModel, InferSelectModel, isNull } from "drizzle-orm";
-import { PostgresJsDatabase } from "drizzle-orm/postgres-js";
-import { type Language } from "i18n/constants";
-import { jsonFieldDeep } from "utils/drizzle";
+import { ticketCategoryTable } from 'db/schema';
+import { and, eq, ilike, type InferInsertModel, type InferSelectModel, isNull } from 'drizzle-orm';
+import { type PostgresJsDatabase } from 'drizzle-orm/postgres-js';
+import { type Language } from 'i18n/constants';
+import { jsonFieldDeep } from 'utils/drizzle';
 
 export type TicketCategoryInsertModel = InferInsertModel<typeof ticketCategoryTable>;
 export type TicketCategorySelectNodel = InferSelectModel<typeof ticketCategoryTable>;

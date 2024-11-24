@@ -20,7 +20,7 @@ const envShape = z.object({
 
   DISCORD_TOKEN: z.string().min(1),
   DISCORD_CLIENT_ID: z.string().min(1),
-  
+
   TRANSCRIPT_CHANNEL_ID: z.string().min(1),
 
   POSTGRES_SERVER: z.string().min(1),

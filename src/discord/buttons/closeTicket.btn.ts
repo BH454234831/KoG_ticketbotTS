@@ -1,21 +1,16 @@
-import { config } from "config";
-import { dbTicketCategoryService, dbTicketService } from "db/services";
-import { ButtonInteraction, ButtonStyle, ChannelType, CommandInteraction, GuildTextBasedChannel, TextChannel } from "discord.js";
-import { ThreadModeratorGuard } from "discord/guards";
-import { ButtonComponent, Discord, Guard, Slash } from "discordx";
-import { i18n } from "i18n/instance";
-import { Language } from "i18n/constants";
-import { createButtons } from "utils/discord/buttons";
-import { resolveInteractionMemberData } from "utils/discord/resolve";
-import discordTranscripts from 'discord-html-transcripts';
-import { logger } from "logger";
-import { closeTicket } from "discord/actions/closeTicket";
+import { ButtonInteraction, ButtonStyle } from 'discord.js';
+import { ThreadModeratorGuard } from 'discord/guards';
+import { ButtonComponent, Discord, Guard } from 'discordx';
+import { i18n } from 'i18n/instance';
+import { type Language } from 'i18n/constants';
+import { createButtons } from 'utils/discord/buttons';
+import { closeTicket } from 'discord/actions/closeTicket';
 
 export type TicketCloseAction = 'accept' | 'reject' | 'delete';
 
 @Discord()
 export class CloseTicketButton {
-  @ButtonComponent({ id: /^thread@[a-z\-]+@close$/i })
+  @ButtonComponent({ id: /^thread@[a-z-]+@close$/i })
   @Guard(ThreadModeratorGuard)
   public async closeTicketRequest (interaction: ButtonInteraction<'cached'>): Promise<void> {
     await interaction.deferReply({ ephemeral: true });
@@ -46,7 +41,7 @@ export class CloseTicketButton {
     });
   }
 
-  @ButtonComponent({ id: /^thread@[a-z\-]+@close@[a-z]+$/i })
+  @ButtonComponent({ id: /^thread@[a-z-]+@close@[a-z]+$/i })
   @Guard(ThreadModeratorGuard)
   public async closeTicketAction (interaction: ButtonInteraction<'cached'>): Promise<void> {
     const [, language,, action] = interaction.customId.split('@') as [string, Language, string, TicketCloseAction];

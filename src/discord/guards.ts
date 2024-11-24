@@ -1,7 +1,7 @@
-import { PermissionFlagsBits } from "discord.js";
-import { ArgsOf, GuardFunction } from "discordx";
-import { logger } from "logger";
-import moment, { unitOfTime } from "moment";
+import { PermissionFlagsBits } from 'discord.js';
+import { type ArgsOf, type GuardFunction } from 'discordx';
+import { logger } from 'logger';
+import moment, { type unitOfTime } from 'moment';
 
 export const ThreadModeratorGuard: GuardFunction<ArgsOf<'interactionCreate'>> = async (arg, client, next) => {
   const interaction = arg instanceof Array ? arg[0] : arg;
@@ -13,7 +13,7 @@ export const ThreadModeratorGuard: GuardFunction<ArgsOf<'interactionCreate'>> = 
   if (missingPermissions.length > 0) {
     logger.info(`[ThreadModeratorGuard] Missing permissions: ${missingPermissions.join(', ')}`);
     return;
-  } 
+  }
 
   await next();
 };

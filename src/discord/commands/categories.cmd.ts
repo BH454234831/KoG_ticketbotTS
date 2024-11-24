@@ -1,8 +1,8 @@
-import { dbTicketCategoryService } from "db/services";
-import { ApplicationCommandOptionType, ChannelType, CommandInteraction, Role, TextChannel } from "discord.js";
-import { categoryAutocomplete } from "discord/autocomplete";
-import { Discord, Slash, SlashGroup, SlashOption } from "discordx";
-import { translateService } from "services";
+import { dbTicketCategoryService } from 'db/services';
+import { ApplicationCommandOptionType, ChannelType, CommandInteraction, type Role, TextChannel } from 'discord.js';
+import { categoryAutocomplete } from 'discord/autocomplete';
+import { Discord, Slash, SlashGroup, SlashOption } from 'discordx';
+import { translateService } from 'services';
 
 @Discord()
 @SlashGroup({
@@ -29,7 +29,7 @@ export class CategoriesCommands {
           const requiredRoles = category.requiredRoleIds?.map(roleId => `<@&${roleId}>`) ?? [];
 
           return {
-            name: category.name['en'],
+            name: category.name.en,
             value: `Channel: <#${category.channelId}>\nRequired roles: ${requiredRoles.join(', ')}`,
           };
         }),
@@ -49,9 +49,9 @@ export class CategoriesCommands {
       type: ApplicationCommandOptionType.String,
       autocomplete: categoryAutocomplete,
     })
-    categoryId: string,
+      categoryId: string,
 
-    interaction: CommandInteraction,
+      interaction: CommandInteraction,
   ): Promise<void> {
     await interaction.deferReply();
 
@@ -67,13 +67,15 @@ export class CategoriesCommands {
       return `${language}: ${name}`;
     });
 
-    const welcomes = category.welcome != null ? Object.entries(category.welcome).map(([language, welcome]) => {
-      return `${language}: ${welcome.slice(0, 100)}...`;
-    }) : null;
+    const welcomes = category.welcome != null
+      ? Object.entries(category.welcome).map(([language, welcome]) => {
+        return `${language}: ${welcome.slice(0, 100)}...`;
+      })
+      : null;
 
     await interaction.editReply({
       embeds: [{
-        title: category.name['en'],
+        title: category.name.en,
         fields: [
           {
             name: 'Channel',
@@ -87,10 +89,12 @@ export class CategoriesCommands {
             name: 'Names',
             value: names.join('\n'),
           },
-          ...(welcomes != null ? [{
-            name: 'Welcome messages',
-            value: welcomes.join('\n'),
-          }] : []),
+          ...(welcomes != null
+            ? [{
+                name: 'Welcome messages',
+                value: welcomes.join('\n'),
+              }]
+            : []),
         ],
       }],
     });
@@ -108,44 +112,44 @@ export class CategoriesCommands {
       type: ApplicationCommandOptionType.Channel,
       channelTypes: [ChannelType.GuildText],
     })
-    channel: TextChannel,
+      channel: TextChannel,
 
-    @SlashOption({
-      name: 'name-en',
-      description: 'Category name in English',
-      required: true,
-      type: ApplicationCommandOptionType.String,
-      maxLength: 60,
-    })
-    nameEn: string,
+      @SlashOption({
+        name: 'name-en',
+        description: 'Category name in English',
+        required: true,
+        type: ApplicationCommandOptionType.String,
+        maxLength: 60,
+      })
+      nameEn: string,
 
-    @SlashOption({
-      name: 'welcome-en',
-      description: 'Category welcome message in English',
-      required: false,
-      type: ApplicationCommandOptionType.String,
-      maxLength: 2000,
-    })
-    welcomeEn: string | undefined,
+      @SlashOption({
+        name: 'welcome-en',
+        description: 'Category welcome message in English',
+        required: false,
+        type: ApplicationCommandOptionType.String,
+        maxLength: 2000,
+      })
+      welcomeEn: string | undefined,
 
-    @SlashOption({
-      name: 'required-role',
-      description: 'Category required role',
-      required: false,
-      type: ApplicationCommandOptionType.Role,
-    })
-    requiredRole: Role | undefined,
+      @SlashOption({
+        name: 'required-role',
+        description: 'Category required role',
+        required: false,
+        type: ApplicationCommandOptionType.Role,
+      })
+      requiredRole: Role | undefined,
 
-    @SlashOption({
-      name: 'autodelete-minutes',
-      description: 'Category autodelete in minutes',
-      required: false,
-      type: ApplicationCommandOptionType.Integer,
-      minValue: 1,
-    })
-    autodeleteMinutes: number | undefined,
+      @SlashOption({
+        name: 'autodelete-minutes',
+        description: 'Category autodelete in minutes',
+        required: false,
+        type: ApplicationCommandOptionType.Integer,
+        minValue: 1,
+      })
+      autodeleteMinutes: number | undefined,
 
-    interaction: CommandInteraction<'cached' | 'raw'>,
+      interaction: CommandInteraction<'cached' | 'raw'>,
   ): Promise<void> {
     await interaction.deferReply();
 

@@ -1,14 +1,16 @@
 import { config } from 'config';
-import { GatewayIntentBits, Interaction, InteractionType } from 'discord.js';
+import { GatewayIntentBits, type Interaction, InteractionType } from 'discord.js';
 import { Client } from 'discordx';
 import { consoleWinstonTransport, fileErrorWinstonTransport, logger } from 'logger';
-import { dirname, importx } from "@discordx/importer";
+import { dirname, importx } from '@discordx/importer';
 import { register } from 'tsx/esm/api';
 import 'reflect-metadata';
+// eslint-disable-next-line @typescript-eslint/naming-convention
 const __dirname = dirname(import.meta.url);
 
 Error.stackTraceLimit = Infinity;
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const unregister = register();
 
 const client = new Client({
@@ -47,13 +49,14 @@ async function interactionReplyError (interaction: Interaction, error: any): Pro
   }
 }
 
+// eslint-disable-next-line @typescript-eslint/no-misused-promises
 client.on('interactionCreate', async interaction => {
   if (interaction.isChatInputCommand()) {
-    logger.debug(`[Interaction][Command]: ${interaction.user.username} ${interaction.commandName} [${interaction.options.data}] [${interaction.id}]`)
+    logger.debug(`[Interaction][Command]: ${interaction.user.username} ${interaction.commandName} [${JSON.stringify(interaction.options.data)}] [${interaction.id}]`);
   } else if (interaction.isMessageComponent()) {
-    logger.debug(`[Interaction][MessageComponent]: ${interaction.user.username} ${interaction.customId} [${interaction.id}]`)
+    logger.debug(`[Interaction][MessageComponent]: ${interaction.user.username} ${interaction.customId} [${interaction.id}]`);
   } else {
-    logger.debug(`[Interaction][${InteractionType[interaction.type]}]: ${interaction.user.username} [${interaction.id}]`)
+    logger.debug(`[Interaction][${InteractionType[interaction.type]}]: ${interaction.user.username} [${interaction.id}]`);
   }
 
   try {
@@ -64,20 +67,18 @@ client.on('interactionCreate', async interaction => {
   }
 });
 
+// eslint-disable-next-line @typescript-eslint/no-misused-promises
 client.on('ready', async () => {
   logger.info('Initializing application commands...');
   await client.initApplicationCommands();
   logger.info(`Ready! logged in as ${client.user?.username}`);
-})
+});
 
 logger.info('Loading commands...');
-await importx(`${__dirname}/discord/**/*.{cmd,btn,evt}.{js,ts}`)
-
+await importx(`${__dirname}/discord/**/*.{cmd,btn,evt}.{js,ts}`);
 
 logger.info('Logging in...');
 await client.login(config.DISCORD_TOKEN);
 
 logger.exceptions.handle(consoleWinstonTransport, fileErrorWinstonTransport);
 logger.rejections.handle(consoleWinstonTransport, fileErrorWinstonTransport);
-
-

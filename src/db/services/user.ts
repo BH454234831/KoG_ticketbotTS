@@ -1,7 +1,7 @@
-import { userTable } from "db/schema";
-import { InferInsertModel, InferSelectModel } from "drizzle-orm";
-import { PostgresJsDatabase } from "drizzle-orm/postgres-js";
-import { coalesce, excluded, PgGenericDatabase } from "utils/drizzle";
+import { userTable } from 'db/schema';
+import { type InferInsertModel, type InferSelectModel } from 'drizzle-orm';
+import { type PostgresJsDatabase } from 'drizzle-orm/postgres-js';
+import { coalesce, excluded, type PgGenericDatabase } from 'utils/drizzle';
 
 export type UserInsertModel = InferInsertModel<typeof userTable>;
 export type UserSelectModel = InferSelectModel<typeof userTable>;

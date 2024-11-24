@@ -1,6 +1,6 @@
-import { bigint, foreignKey, index, integer, jsonb, pgEnum, pgTable, primaryKey, varchar } from "drizzle-orm/pg-core";
-import { type Language } from "i18n/constants";
-import { bigintString, bytea, createdAtTimestampDate, deletedAtTimestampDate, updatedAtTimestampDate } from "utils/drizzle";
+import { bigint, foreignKey, index, integer, jsonb, pgEnum, pgTable, primaryKey, varchar } from 'drizzle-orm/pg-core';
+import { type Language } from 'i18n/constants';
+import { bigintString, bytea, createdAtTimestampDate, deletedAtTimestampDate, updatedAtTimestampDate } from 'utils/drizzle';
 
 export const ticketStatusValues = ['open', 'accept', 'reject', 'delete'] as const;
 export type TicketStatus = typeof ticketStatusValues[number];

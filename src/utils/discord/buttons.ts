@@ -1,7 +1,7 @@
-import { ActionRowBuilder, ButtonBuilder, ButtonStyle } from "discord.js";
-import _ from "lodash";
+import { ActionRowBuilder, ButtonBuilder, ButtonStyle } from 'discord.js';
+import _ from 'lodash';
 
-export function createButtons (values: Array<{ id: string; label: string; emoji?: string; style?: ButtonStyle }>): ActionRowBuilder<ButtonBuilder>[] {
+export function createButtons (values: Array<{ id: string; label: string; emoji?: string; style?: ButtonStyle }>): Array<ActionRowBuilder<ButtonBuilder>> {
   return _.chunk(values, 5).map(vals => {
     const buttons = vals.map(val => {
       let button = new ButtonBuilder()

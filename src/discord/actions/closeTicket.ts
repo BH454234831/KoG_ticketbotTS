@@ -1,11 +1,11 @@
-import { config } from "config";
-import { dbTicketCategoryService, dbTicketService } from "db/services";
-import { logger } from "logger";
-import { resolveInteractionMemberData } from "utils/discord/resolve";
+import { config } from 'config';
+import { dbTicketCategoryService, dbTicketService } from 'db/services';
+import { logger } from 'logger';
+import { resolveInteractionMemberData } from 'utils/discord/resolve';
 import discordTranscripts from 'discord-html-transcripts';
-import { ButtonInteraction, CommandInteraction, TextChannel } from "discord.js";
-import { Language } from "i18n/constants";
-import { TicketCloseAction } from "discord/buttons/closeTicket.btn";
+import { type ButtonInteraction, type CommandInteraction, type TextChannel } from 'discord.js';
+import { type Language } from 'i18n/constants';
+import { type TicketCloseAction } from 'discord/buttons/closeTicket.btn';
 
 export async function closeTicket (interaction: CommandInteraction<'cached'> | ButtonInteraction<'cached'>, language: Language, action: TicketCloseAction): Promise<void> {
   const channel = interaction.channel ?? interaction.guild.channels.cache.get(interaction.channelId);
@@ -61,31 +61,31 @@ export async function closeTicket (interaction: CommandInteraction<'cached'> | B
   const transcript = await discordTranscripts.createTranscript(channel, {
     saveImages: true,
     poweredBy: false,
-    filename: `${ticket.createdAt.toUTCString()}_${language}-${category.name['en']}_${ticketMemberData.displayName}.html`,
-    footerText: `${ticket.createdAt.toUTCString()}\n${language}-${category.name['en']}\n${ticketMemberData.displayName}`,
+    filename: `${ticket.createdAt.toUTCString()}_${language}-${category.name.en}_${ticketMemberData.displayName}.html`,
+    footerText: `${ticket.createdAt.toUTCString()}\n${language}-${category.name.en}\n${ticketMemberData.displayName}`,
   });
 
   await transcriptChannel.send({
     embeds: [{
-      "title": "Ticket closed",
-      "color": 16711680,
-      "fields": [
+      title: 'Ticket closed',
+      color: 16711680,
+      fields: [
         {
-          "name": "Ticket category",
-          "value": `${language} ${category.name['en']}`,
+          name: 'Ticket category',
+          value: `${language} ${category.name.en}`,
         },
         {
-          "name": "Deleted by",
-          "value": `<@${interaction.user.id}> (${memberData.displayName})`,
-          "inline": false
+          name: 'Deleted by',
+          value: `<@${interaction.user.id}> (${memberData.displayName})`,
+          inline: false,
         },
         {
-          "name": "Created by",
-          "value": `<@${ticket.userId}> (${ticketMemberData.displayName})`,
-          "inline": false
-        }
+          name: 'Created by',
+          value: `<@${ticket.userId}> (${ticketMemberData.displayName})`,
+          inline: false,
+        },
       ],
-      "timestamp": new Date().toISOString(),
+      timestamp: new Date().toISOString(),
     }],
     files: [transcript],
   });

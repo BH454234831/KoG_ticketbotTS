@@ -1,11 +1,11 @@
-import { db } from "db/db";
-import { DbTicketService } from "./ticket";
-import { DbTicketCategoryService } from "./ticketCategory";
-import { DbUserService } from "./user";
+import { db } from 'db/db';
+import { DbTicketService } from './ticket.js';
+import { DbTicketCategoryService } from './ticketCategory.js';
+import { DbUserService } from './user.js';
 
-export * from "./user";
-export * from "./ticket";
-export * from "./ticketCategory";
+export * from './user.js';
+export * from './ticket.js';
+export * from './ticketCategory.js';
 
 export const dbUserService = new DbUserService({ db });
 export const dbTicketService = new DbTicketService({ db, dbUserService });

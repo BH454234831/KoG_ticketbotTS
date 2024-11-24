@@ -1,4 +1,4 @@
-import { BaseInteraction, GuildMember, Interaction } from "discord.js";
+import { type BaseInteraction, GuildMember, type Interaction } from 'discord.js';
 
 export async function resolveInteractionMemberOrThrow (interaction: Interaction): Promise<GuildMember | null> {
   if (interaction.member instanceof GuildMember) return interaction.member;
@@ -25,16 +25,20 @@ export type ResolvedMemberData = {
 export async function resolveInteractionMemberData (interaction: BaseInteraction<'cached'>, userId: string = interaction.user.id): Promise<ResolvedMemberData> {
   if (interaction.guild == null) throw new Error('guild is null');
   const member = interaction.guild.members.cache.get(userId) ?? await interaction.guild.members.fetch(userId).catch(() => null);
-  if (member != null) return {
-    username: member.user.username,
-    displayName: member.displayName,
-    displayAvatarUrl: member.displayAvatarURL(),
-  };
+  if (member != null) {
+    return {
+      username: member.user.username,
+      displayName: member.displayName,
+      displayAvatarUrl: member.displayAvatarURL(),
+    };
+  }
   const user = await interaction.client.users.fetch(userId).catch(() => null);
-  if (user != null) return {
-    username: user.username,
-    displayName: null,
-    displayAvatarUrl: user.displayAvatarURL(),
+  if (user != null) {
+    return {
+      username: user.username,
+      displayName: null,
+      displayAvatarUrl: user.displayAvatarURL(),
+    };
   }
   return {
     username: null,

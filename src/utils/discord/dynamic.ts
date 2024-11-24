@@ -1,4 +1,4 @@
-import { ButtonComponent, MethodDecoratorEx } from "discordx";
+import { ButtonComponent, type MethodDecoratorEx } from 'discordx';
 
 export function ButtonComponents (ids: readonly string[], map?: (id: string) => string): MethodDecoratorEx {
   return (target, propertyKey, descriptor) => {

@@ -3,7 +3,7 @@ import { drizzle } from 'drizzle-orm/postgres-js/driver';
 import { logger } from 'logger';
 import postgres from 'postgres';
 
-function jsonBigintReplacer (value: any) {
+function jsonBigintReplacer (value: any): any {
   if (typeof value === 'bigint') {
     return value.toString();
   }

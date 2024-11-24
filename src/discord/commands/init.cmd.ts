@@ -1,9 +1,8 @@
-import { CommandInteraction } from "discord.js";
-import { Discord, Slash } from "discordx";
-import { i18n } from "i18n/instance";
-import { languages } from "i18n/constants";
-import _ from "lodash";
-import { createButtons } from "utils/discord/buttons";
+import { CommandInteraction } from 'discord.js';
+import { Discord, Slash } from 'discordx';
+import { i18n } from 'i18n/instance';
+import { languages } from 'i18n/constants';
+import { createButtons } from 'utils/discord/buttons';
 
 @Discord()
 export class InitCommands {
@@ -14,13 +13,13 @@ export class InitCommands {
     dmPermission: false,
   })
   public async doticketbutton (interaction: CommandInteraction<'cached'>): Promise<void> {
-    if (!interaction.channel?.isSendable()) {
+    if (interaction.channel?.isSendable() !== true) {
       return;
     }
 
     await interaction.deferReply({
       ephemeral: true,
-    })
+    });
 
     const buttonRows = createButtons(languages.map(lang => {
       return {

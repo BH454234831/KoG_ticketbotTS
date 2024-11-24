@@ -1,16 +1,16 @@
-import { dbTicketCategoryService, dbTicketService } from "db/services";
-import { ButtonInteraction, ChannelType, PermissionFlagsBits } from "discord.js";
-import { TooOldGuard } from "discord/guards";
-import { ButtonComponent, Discord, Guard } from "discordx";
-import { Language } from "i18n/constants";
-import { i18n } from "i18n/instance";
-import { logger } from "logger";
-import { createButtons } from "utils/discord/buttons";
-import { resolveInteractionMemberData } from "utils/discord/resolve";
+import { dbTicketCategoryService, dbTicketService } from 'db/services';
+import { ButtonInteraction, ChannelType, PermissionFlagsBits } from 'discord.js';
+import { TooOldGuard } from 'discord/guards';
+import { ButtonComponent, Discord, Guard } from 'discordx';
+import { type Language } from 'i18n/constants';
+import { i18n } from 'i18n/instance';
+import { logger } from 'logger';
+import { createButtons } from 'utils/discord/buttons';
+import { resolveInteractionMemberData } from 'utils/discord/resolve';
 
 @Discord()
 export class OpenTicketButtons {
-  @ButtonComponent({ id: /^category@[a-z\-]+@[a-z0-9\-]$/i })
+  @ButtonComponent({ id: /^category@[a-z-]+@[a-z0-9-]$/i })
   @Guard(TooOldGuard(1, 'minutes'))
   public async openTicket (interaction: ButtonInteraction<'cached'>): Promise<void> {
     await interaction.deferReply({
@@ -40,10 +40,10 @@ export class OpenTicketButtons {
     }
 
     const clientMember = interaction.guild.members.me ?? await interaction.guild.members.fetchMe();
-    const channelMissingPermissions = channel.permissionsFor(clientMember, true).missing(PermissionFlagsBits.CreatePrivateThreads | PermissionFlagsBits.ManageThreads | PermissionFlagsBits.ManageChannels)
+    const channelMissingPermissions = channel.permissionsFor(clientMember, true).missing(PermissionFlagsBits.CreatePrivateThreads | PermissionFlagsBits.ManageThreads | PermissionFlagsBits.ManageChannels);
 
     if (channelMissingPermissions.length > 0) {
-      logger.info(`[OpenTicketButtons][openTicket] missing permissions: ${channelMissingPermissions}`);
+      logger.info(`[OpenTicketButtons][openTicket] missing permissions: ${channelMissingPermissions.join(',')}`);
       return;
     }
 
@@ -58,13 +58,13 @@ export class OpenTicketButtons {
     const threadMissingPermissions = thread.permissionsFor(clientMember, true).missing(PermissionFlagsBits.ViewChannel | PermissionFlagsBits.SendMessages | PermissionFlagsBits.ReadMessageHistory);
 
     if (threadMissingPermissions.length > 0) {
-      logger.info(`[OpenTicketButtons][openTicket] missing permissions: ${threadMissingPermissions}`);
+      logger.info(`[OpenTicketButtons][openTicket] missing permissions: ${threadMissingPermissions.join(',')}`);
       await thread.delete();
       return;
     }
 
     await channel.permissionOverwrites.create(interaction.user, {
-      'ViewChannel': true,
+      ViewChannel: true,
     });
 
     await thread.members.add(interaction.user);

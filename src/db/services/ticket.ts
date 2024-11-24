@@ -1,8 +1,8 @@
-import { ticketMessageFileTable, ticketMessageTable, TicketStatus, ticketTable, ticketUserTable } from "db/schema";
-import { and, eq, InferInsertModel, InferSelectModel, isNotNull } from "drizzle-orm";
-import { PostgresJsDatabase } from "drizzle-orm/postgres-js";
-import { type DbUserService, UserInsertModel } from "./user";
-import { PgGenericDatabase } from "utils/drizzle";
+import { ticketMessageFileTable, ticketMessageTable, type TicketStatus, ticketTable, ticketUserTable } from 'db/schema';
+import { and, eq, type InferInsertModel, type InferSelectModel, isNotNull } from 'drizzle-orm';
+import { type PostgresJsDatabase } from 'drizzle-orm/postgres-js';
+import { type DbUserService, type UserInsertModel } from './user.js';
+import { type PgGenericDatabase } from 'utils/drizzle';
 
 export type TicketInsertModel = InferInsertModel<typeof ticketTable>;
 export type TicketSelectModel = InferSelectModel<typeof ticketTable>;
@@ -89,7 +89,7 @@ export class DbTicketService {
       await this.dbUserService.upsert(userData, tx);
 
       await this._upsertTicketUser(channelId, userData, tx);
-    })
+    });
   }
 
   public async deleteTicketUser (channelId: string, userId: string): Promise<void> {

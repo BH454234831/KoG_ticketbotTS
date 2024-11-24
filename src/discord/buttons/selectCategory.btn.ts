@@ -1,14 +1,14 @@
-import { dbTicketCategoryService } from "db/services";
-import { ButtonInteraction, GuildMember } from "discord.js";
-import { ButtonComponent, Discord } from "discordx";
-import { i18n } from "i18n/instance";
-import { Language } from "i18n/constants";
-import { createButtons } from "utils/discord/buttons";
-import { resolveInteractionMemberOrThrow } from "utils/discord/resolve";
+import { dbTicketCategoryService } from 'db/services';
+import { ButtonInteraction } from 'discord.js';
+import { ButtonComponent, Discord } from 'discordx';
+import { i18n } from 'i18n/instance';
+import { type Language } from 'i18n/constants';
+import { createButtons } from 'utils/discord/buttons';
+import { resolveInteractionMemberOrThrow } from 'utils/discord/resolve';
 
 @Discord()
 export class SelectCategoryButtons {
-  @ButtonComponent({ id: /^language@[a-z\-]+$/i })
+  @ButtonComponent({ id: /^language@[a-z-]+$/i })
   public async handleticketbutton (interaction: ButtonInteraction<'cached'>): Promise<void> {
     await interaction.deferReply({
       ephemeral: true,
@@ -18,7 +18,7 @@ export class SelectCategoryButtons {
 
     const categories = await dbTicketCategoryService.selectAll();
 
-    const member = await resolveInteractionMemberOrThrow(interaction) as GuildMember;
+    const member = (await resolveInteractionMemberOrThrow(interaction))!;
 
     const allowedCategories = categories.filter(category => {
       if (category.requiredRoleIds != null && category.requiredRoleIds.length > 0) {
