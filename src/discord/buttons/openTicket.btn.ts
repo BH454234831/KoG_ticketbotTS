@@ -2,7 +2,8 @@ import { dbTicketCategoryService, dbTicketService } from "db/services";
 import { ButtonInteraction, ChannelType, PermissionFlagsBits } from "discord.js";
 import { TooOldGuard } from "discord/guards";
 import { ButtonComponent, Discord, Guard } from "discordx";
-import { i18n, Language } from "i18n/instance";
+import { Language } from "i18n/constants";
+import { i18n } from "i18n/instance";
 import { createButtons } from "utils/discord/buttons";
 import { resolveInteractionMemberData } from "utils/discord/resolve";
 

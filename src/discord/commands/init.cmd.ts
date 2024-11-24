@@ -1,6 +1,7 @@
-import { ActionRowBuilder, ButtonBuilder, ButtonStyle, CommandInteraction } from "discord.js";
+import { CommandInteraction } from "discord.js";
 import { Discord, Slash } from "discordx";
-import { i18n, languages } from "i18n/instance";
+import { i18n } from "i18n/instance";
+import { languages } from "i18n/constants";
 import _ from "lodash";
 import { createButtons } from "utils/discord/buttons";
 
