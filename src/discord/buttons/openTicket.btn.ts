@@ -1,6 +1,7 @@
 import { dbTicketCategoryService, dbTicketService } from "db/services";
 import { ButtonInteraction, ChannelType, PermissionFlagsBits } from "discord.js";
-import { ButtonComponent, Discord } from "discordx";
+import { TooOldGuard } from "discord/guards";
+import { ButtonComponent, Discord, Guard } from "discordx";
 import { i18n, Language } from "i18n/instance";
 import { createButtons } from "utils/discord/buttons";
 import { resolveInteractionMemberData } from "utils/discord/resolve";
@@ -8,6 +9,7 @@ import { resolveInteractionMemberData } from "utils/discord/resolve";
 @Discord()
 export class OpenTicketButtons {
   @ButtonComponent({ id: /category@[a-z\-]+@[a-z0-9\-]/i })
+  @Guard(TooOldGuard(1, 'minutes'))
   public async openTicket (interaction: ButtonInteraction): Promise<void> {
     await interaction.deferReply({
       ephemeral: true,

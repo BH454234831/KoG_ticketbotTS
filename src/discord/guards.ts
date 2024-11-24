@@ -1,5 +1,6 @@
 import { PermissionFlagsBits } from "discord.js";
 import { ArgsOf, GuardFunction } from "discordx";
+import moment, { unitOfTime } from "moment";
 
 export const ThreadModeratorGuard: GuardFunction<ArgsOf<'interactionCreate'>> = async ([interaction], client, next) => {
   if (!interaction.inGuild() || interaction.guild == null) return;
@@ -10,3 +11,14 @@ export const ThreadModeratorGuard: GuardFunction<ArgsOf<'interactionCreate'>> = 
 
   await next();
 };
+
+export function TooOldGuard (amount: number, unit: unitOfTime.DurationConstructor): GuardFunction<ArgsOf<'interactionCreate'>> {
+  return async ([interaction], client, next) => {
+    if ('message' in interaction && interaction.message != null) {
+      const date = moment(interaction.message.createdTimestamp).add(amount, unit);
+      if (moment().isAfter(date)) return;
+    }
+
+    await next();
+  };
+}

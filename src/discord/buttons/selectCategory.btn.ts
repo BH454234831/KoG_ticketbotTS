@@ -1,6 +1,7 @@
 import { dbTicketCategoryService } from "db/services";
 import { ButtonInteraction, GuildMember } from "discord.js";
-import { ButtonComponent, Discord } from "discordx";
+import { TooOldGuard } from "discord/guards";
+import { ButtonComponent, Discord, Guard } from "discordx";
 import { i18n, Language, languages } from "i18n/instance";
 import { createButtons } from "utils/discord/buttons";
 import { resolveInteractionMemberOrThrow } from "utils/discord/resolve";
@@ -8,6 +9,7 @@ import { resolveInteractionMemberOrThrow } from "utils/discord/resolve";
 @Discord()
 export class SelectCategoryButtons {
   @ButtonComponent({ id: /language@[a-z\-]+/i })
+  @Guard(TooOldGuard(1, 'minutes'))
   public async handleticketbutton (interaction: ButtonInteraction): Promise<void> {
     if (interaction.guild == null) return;
 
