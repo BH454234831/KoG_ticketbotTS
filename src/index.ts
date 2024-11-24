@@ -3,7 +3,13 @@ import { GatewayIntentBits, Interaction } from 'discord.js';
 import { Client } from 'discordx';
 import { consoleWinstonTransport, fileErrorWinstonTransport, logger } from 'logger';
 import { dirname, importx } from "@discordx/importer";
+import { register } from 'tsx/esm/api';
+import 'reflect-metadata';
 const __dirname = dirname(import.meta.url);
+
+Error.stackTraceLimit = Infinity;
+
+const unregister = register();
 
 const client = new Client({
   intents: [

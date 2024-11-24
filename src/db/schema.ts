@@ -1,5 +1,5 @@
 import { bigint, foreignKey, index, jsonb, pgEnum, pgTable, primaryKey, varchar } from "drizzle-orm/pg-core";
-import { Language } from "i18n/instance";
+import { type Language } from "i18n/constants";
 import { bigintString, bytea, createdAtTimestampDate, deletedAtTimestampDate, updatedAtTimestampDate } from "utils/drizzle";
 
 export const ticketStatusValues = ['open', 'accept', 'reject', 'delete'] as const;

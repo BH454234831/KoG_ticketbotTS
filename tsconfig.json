@@ -22,6 +22,7 @@
     "allowUnreachableCode": false,
     "allowUnusedLabels": false,
     "forceConsistentCasingInFileNames": true,
+    "allowSyntheticDefaultImports": true,
 
     "baseUrl": "./src",
     "outDir": "./dist"
