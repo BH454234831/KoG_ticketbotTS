@@ -1,8 +1,9 @@
-import { ticketMessageFileTable, ticketMessageTable, TicketStatus, ticketTable, ticketUserTable } from "db/schema";
+import { importantMessageTable, ticketMessageFileTable, ticketMessageTable, TicketStatus, ticketTable, ticketUserTable } from "db/schema";
 import { and, eq, InferInsertModel, InferSelectModel, isNotNull } from "drizzle-orm";
 import { PostgresJsDatabase } from "drizzle-orm/postgres-js";
 import { type DbUserService, UserInsertModel } from "./user";
 import { PgGenericDatabase } from "utils/drizzle";
+import { DbImportantMessageService } from "./importantMessage";
 
 export type TicketInsertModel = InferInsertModel<typeof ticketTable>;
 export type TicketSelectModel = InferSelectModel<typeof ticketTable>;
@@ -16,18 +17,21 @@ export type TicketMessageFileSelectModel = InferSelectModel<typeof ticketMessage
 export type DbTicketServiceOptions = {
   db: PostgresJsDatabase;
   dbUserService: DbUserService;
+  dbImportantMessageService: DbImportantMessageService;
 };
 
 export class DbTicketService {
   public readonly db: PostgresJsDatabase;
   public readonly dbUserService: DbUserService;
+  public readonly dbImportantMessageService: DbImportantMessageService;
 
   public constructor (options: DbTicketServiceOptions) {
     this.db = options.db;
     this.dbUserService = options.dbUserService;
+    this.dbImportantMessageService = options.dbImportantMessageService;
   }
 
-  public async createTicket (ticketData: TicketInsertModel, userData: UserInsertModel): Promise<void> {
+  public async createTicket (ticketData: TicketInsertModel, userData: UserInsertModel, firstMessageId: string): Promise<void> {
     await this.db.transaction(async (tx) => {
       await this.dbUserService.upsert(userData, tx);
 
@@ -37,6 +41,8 @@ export class DbTicketService {
         .execute();
 
       await this._upsertTicketUser(ticketData.channelId, userData, tx);
+
+      await this.dbImportantMessageService.insert({ guildId: ticketData.guildId, channelId: ticketData.channelId, messageId: firstMessageId }, tx);
     });
   }
 
@@ -48,6 +54,16 @@ export class DbTicketService {
       .execute();
 
     return ticket ?? null;
+  }
+
+  public async getOpenTickets (): Promise<TicketSelectModel[]> {
+    const tickets = await this.db
+      .select()
+      .from(ticketTable)
+      .where(eq(ticketTable.status, 'open'))
+      .execute();
+
+    return tickets;
   }
 
   public async getOpenTicketsByUserId (userId: string, categoryId?: string): Promise<TicketSelectModel[]> {

@@ -1,6 +1,6 @@
 import { config } from "config";
 import { dbTicketCategoryService, dbTicketService } from "db/services";
-import { ButtonInteraction, ButtonStyle } from "discord.js";
+import { ButtonInteraction, ButtonStyle, ChannelType, GuildTextBasedChannel, TextChannel } from "discord.js";
 import { ThreadModeratorGuard } from "discord/guards";
 import { ButtonComponent, Discord, Guard } from "discordx";
 import { i18n } from "i18n/instance";
@@ -8,14 +8,17 @@ import { Language } from "i18n/constants";
 import { createButtons } from "utils/discord/buttons";
 import { resolveInteractionMemberData } from "utils/discord/resolve";
 import discordTranscripts from 'discord-html-transcripts';
+import { logger } from "logger";
 
-export type TicketCloseAction = 'accept' | 'reject' | 'delete' | 'cancel';
+export type TicketCloseAction = 'accept' | 'reject' | 'delete';
 
 @Discord()
 export class CloseTicketButton {
-  @ButtonComponent({ id: /thread@[a-z\-]+@close/i })
+  @ButtonComponent({ id: /^thread@[a-z\-]+@close$/i })
   @Guard(ThreadModeratorGuard)
-  public async closeTicket (interaction: ButtonInteraction): Promise<void> {
+  public async closeTicket (interaction: ButtonInteraction<'cached'>): Promise<void> {
+    await interaction.deferReply({ ephemeral: true });
+
     const [, language] = interaction.customId.split('@') as [string, Language];
 
     const buttonRows = createButtons([
@@ -34,11 +37,6 @@ export class CloseTicketButton {
         label: i18n.__('{{thread_buttons.close.delete.labels}}', undefined, language),
         style: ButtonStyle.Danger,
       },
-      {
-        id: `thread@${language}@close@cancel`,
-        label: i18n.__('{{thread_buttons.close.cancel.labels}}', undefined, language),
-        style: ButtonStyle.Success,
-      },
     ]);
 
     await interaction.editReply({
@@ -47,25 +45,38 @@ export class CloseTicketButton {
     });
   }
 
-  @ButtonComponent({ id: /thread@[a-z\-]+@close@[a-z]+/i })
+  @ButtonComponent({ id: /^thread@[a-z\-]+@close@[a-z]+$/i })
   @Guard(ThreadModeratorGuard)
-  public async closeTicketCancel (interaction: ButtonInteraction): Promise<void> {
+  public async closeTicketCancel (interaction: ButtonInteraction<'cached'>): Promise<void> {
     const [, language,, action] = interaction.customId.split('@') as [string, Language, string, TicketCloseAction];
 
-    if (action === 'cancel') {
-      await interaction.deferReply({ ephemeral: true });
-      await interaction.message.delete();
-      await interaction.deleteReply();
+    const channel = interaction.channel ?? interaction.guild.channels.cache.get(interaction.channelId);
+
+    if (channel == null) {
+      logger.info(`[CloseTicketButton][closeTicketCancel] channel not found: ${interaction.channelId}`);
+      return;
+    }
+    if (!channel.isThread()) {
+      logger.info(`[CloseTicketButton][closeTicketCancel] channel is not thread: ${interaction.channelId}`);
+      return;
+    }
+    if (channel.parentId == null) {
+      logger.info(`[CloseTicketButton][closeTicketCancel] channel has no parent: ${interaction.channelId}`);
       return;
     }
 
-    if (interaction.guild == null) return;
-    if (interaction.channel == null) return;
-    if (!interaction.channel.isThread()) return;
-    if (interaction.channel.parent == null) return;
+    const parent = channel.parent ?? interaction.guild.channels.cache.get(channel.parentId) as TextChannel | undefined;
+
+    if (parent == null) {
+      logger.info(`[CloseTicketButton][closeTicketCancel] parent not found: ${channel.parentId}`);
+      return;
+    }
 
     const ticket = await dbTicketService.getTicketByChannelId(interaction.channelId);
-    if (ticket == null) return;
+    if (ticket == null) {
+      logger.info(`[CloseTicketButton][closeTicketCancel] ticket not found: ${interaction.channelId}`);
+      return;
+    }
 
     const category = await dbTicketCategoryService.select(ticket.categoryId);
     if (category == null) return;
@@ -76,13 +87,11 @@ export class CloseTicketButton {
 
     const otherTickets = await dbTicketService.getOpenTicketsByUserId(interaction.user.id, ticket.categoryId);
 
-    await interaction.channel.members.remove(interaction.user);
+    await channel.members.remove(interaction.user);
 
     if (otherTickets.length === 0) {
-      await interaction.channel.parent.permissionOverwrites.delete(interaction.user);
+      await parent.permissionOverwrites.delete(interaction.user);
     }
-
-    await interaction.channel.delete();
 
     const transcriptChannel = interaction.guild.channels.cache.get(config.TRANSCRIPT_CHANNEL_ID);
     if (transcriptChannel == null) return;
@@ -91,7 +100,7 @@ export class CloseTicketButton {
     const ticketMemberData = await resolveInteractionMemberData(interaction, ticket.userId);
     const memberData = await resolveInteractionMemberData(interaction);
 
-    const transcript = await discordTranscripts.createTranscript(interaction.channel, {
+    const transcript = await discordTranscripts.createTranscript(channel, {
       saveImages: true,
       poweredBy: false,
       filename: `${ticket.createdAt.toUTCString()}_${language}-${category.name['en']}_${ticketMemberData.displayName}.html`,
@@ -102,5 +111,7 @@ export class CloseTicketButton {
       content: `Ticket ${language} ${category.name['en']} by <@${ticket.userId}> (${ticketMemberData.displayName}) deleted by <@${interaction.user.id}> (${memberData.displayName})`,
       files: [transcript],
     });
+
+    await channel.delete();
   }
 }

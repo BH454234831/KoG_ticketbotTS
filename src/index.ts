@@ -1,5 +1,5 @@
 import { config } from 'config';
-import { GatewayIntentBits, Interaction } from 'discord.js';
+import { GatewayIntentBits, Interaction, InteractionType } from 'discord.js';
 import { Client } from 'discordx';
 import { consoleWinstonTransport, fileErrorWinstonTransport, logger } from 'logger';
 import { dirname, importx } from "@discordx/importer";
@@ -31,7 +31,7 @@ client.on('error', message => {
 async function interactionReplyError (interaction: Interaction, error: any): Promise<void> {
   try {
     if (interaction.isRepliable()) {
-      if (interaction.replied) {
+      if (interaction.replied || interaction.deferred) {
         await interaction.editReply({
           content: 'There was an error while executing this command.',
         });
@@ -48,6 +48,14 @@ async function interactionReplyError (interaction: Interaction, error: any): Pro
 }
 
 client.on('interactionCreate', async interaction => {
+  if (interaction.isChatInputCommand()) {
+    logger.debug(`[Interaction][Command]: ${interaction.user.username} ${interaction.commandName} [${interaction.options.data}] [${interaction.id}]`)
+  } else if (interaction.isMessageComponent()) {
+    logger.debug(`[Interaction][MessageComponent]: ${interaction.user.username} ${interaction.customId} [${interaction.id}]`)
+  } else {
+    logger.debug(`[Interaction][${InteractionType[interaction.type]}]: ${interaction.user.username} [${interaction.id}]`)
+  }
+
   try {
     await client.executeInteraction(interaction);
   } catch (err) {
@@ -63,7 +71,7 @@ client.on('ready', async () => {
 })
 
 logger.info('Loading commands...');
-await importx(`${__dirname}/discord/**/*.{cmd,btn}.{js,ts}`)
+await importx(`${__dirname}/discord/**/*.{cmd,btn,evt}.{js,ts}`)
 
 
 logger.info('Logging in...');

@@ -1,7 +1,8 @@
 import { ticketCategoryTable } from "db/schema";
-import { and, eq, InferInsertModel, InferSelectModel, isNull } from "drizzle-orm";
+import { and, eq, ilike, InferInsertModel, InferSelectModel, isNull } from "drizzle-orm";
 import { PostgresJsDatabase } from "drizzle-orm/postgres-js";
-import { Language } from "i18n/instance";
+import { type Language } from "i18n/constants";
+import { jsonFieldDeep } from "utils/drizzle";
 
 export type TicketCategoryInsertModel = InferInsertModel<typeof ticketCategoryTable>;
 export type TicketCategorySelectNodel = InferSelectModel<typeof ticketCategoryTable>;
@@ -29,7 +30,7 @@ export class DbTicketCategoryService {
       .select()
       .from(ticketCategoryTable)
       .where(and(
-        eq(ticketCategoryTable.id, categoryId),
+        eq(ticketCategoryTable.id, BigInt(categoryId)),
         isNull(ticketCategoryTable.deletedAt),
       ))
       .execute();
@@ -45,6 +46,17 @@ export class DbTicketCategoryService {
       .execute();
   }
 
+  public async selectSearch (name: string): Promise<TicketCategorySelectNodel[]> {
+    return await this.db
+      .select()
+      .from(ticketCategoryTable)
+      .where(and(
+        ilike(jsonFieldDeep(ticketCategoryTable.name, ['en']), `%${name}%`),
+        isNull(ticketCategoryTable.deletedAt),
+      ))
+      .execute();
+  }
+
   public async updateName (categoryId: string, language: Language, name: string): Promise<void> {
     const category = await this.select(categoryId);
     if (category == null) return;
@@ -52,18 +64,15 @@ export class DbTicketCategoryService {
     await this.db
       .update(ticketCategoryTable)
       .set({ name: { ...category.name, [language]: name } })
-      .where(eq(ticketCategoryTable.id, categoryId))
+      .where(eq(ticketCategoryTable.id, BigInt(categoryId)))
       .execute();
   }
 
-  public async updateWelcome (categoryId: string, language: Language, welcome: string): Promise<void> {
-    const category = await this.select(categoryId);
-    if (category == null) return;
-
+  public async updateWelcome (categoryId: string, language: Language, welcomes: Record<Language, string>): Promise<void> {
     await this.db
       .update(ticketCategoryTable)
-      .set({ welcome: { ...category.welcome, [language]: welcome } })
-      .where(eq(ticketCategoryTable.id, categoryId))
+      .set({ welcome: welcomes })
+      .where(eq(ticketCategoryTable.id, BigInt(categoryId)))
       .execute();
   }
 
@@ -79,7 +88,7 @@ export class DbTicketCategoryService {
     await this.db
       .update(ticketCategoryTable)
       .set({ requiredRoleIds: newRoles })
-      .where(eq(ticketCategoryTable.id, categoryId))
+      .where(eq(ticketCategoryTable.id, BigInt(categoryId)))
       .execute();
   }
 
@@ -96,7 +105,7 @@ export class DbTicketCategoryService {
     await this.db
       .update(ticketCategoryTable)
       .set({ requiredRoleIds: newRoles })
-      .where(eq(ticketCategoryTable.id, categoryId))
+      .where(eq(ticketCategoryTable.id, BigInt(categoryId)))
       .execute();
   }
 
@@ -104,7 +113,15 @@ export class DbTicketCategoryService {
     await this.db
       .update(ticketCategoryTable)
       .set({ deletedAt: new Date() })
-      .where(eq(ticketCategoryTable.id, categoryId))
+      .where(eq(ticketCategoryTable.id, BigInt(categoryId)))
+      .execute();
+  }
+
+  public async deleteByChannelId (channelId: string): Promise<void> {
+    await this.db
+      .update(ticketCategoryTable)
+      .set({ deletedAt: new Date() })
+      .where(eq(ticketCategoryTable.channelId, channelId))
       .execute();
   }
 }

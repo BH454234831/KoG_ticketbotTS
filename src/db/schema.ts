@@ -1,10 +1,21 @@
-import { bigint, foreignKey, index, jsonb, pgEnum, pgTable, primaryKey, varchar } from "drizzle-orm/pg-core";
+import { bigint, foreignKey, index, integer, jsonb, pgEnum, pgTable, primaryKey, varchar } from "drizzle-orm/pg-core";
 import { type Language } from "i18n/constants";
 import { bigintString, bytea, createdAtTimestampDate, deletedAtTimestampDate, updatedAtTimestampDate } from "utils/drizzle";
 
 export const ticketStatusValues = ['open', 'accept', 'reject', 'delete'] as const;
 export type TicketStatus = typeof ticketStatusValues[number];
 export const ticketStatusEnum = pgEnum('ticket_status', ticketStatusValues);
+
+export const importantMessageTable = pgTable('important_message', {
+  messageId: bigintString('message_id').notNull().primaryKey(),
+  guildId: bigintString('guild_id').notNull(),
+  channelId: bigintString('channel_id').notNull(),
+
+  createdAt: createdAtTimestampDate,
+}, (table) => [
+  index('idx__important_message__channel_id').on(table.channelId),
+  index('idx__important_message__guild_id').on(table.guildId),
+]);
 
 export const userTable = pgTable('user', {
   id: bigintString('id').primaryKey(),
@@ -17,11 +28,14 @@ export const userTable = pgTable('user', {
 });
 
 export const ticketCategoryTable = pgTable('ticket_category', {
-  id: bigintString('id').primaryKey(),
+  id: bigint('id', { mode: 'bigint' }).generatedAlwaysAsIdentity().primaryKey(),
+  guildId: bigintString('guild_id').notNull(),
   channelId: bigintString('channel_id').notNull(),
   name: jsonb('name').$type<Record<Language, string>>().notNull(),
-  welcome: jsonb('welcome').$type<Record<Language, string>>().notNull(),
+  welcome: jsonb('welcome').$type<Record<Language, string>>(),
   requiredRoleIds: bigintString('required_role_id').array(),
+
+  autodeleteMinutes: integer('autodelete_minutes'),
 
   createdAt: createdAtTimestampDate,
   updatedAt: updatedAtTimestampDate,
@@ -30,6 +44,7 @@ export const ticketCategoryTable = pgTable('ticket_category', {
 
 export const ticketTable = pgTable('ticket', {
   channelId: bigintString('channel_id').notNull().primaryKey(),
+  guildId: bigintString('guild_id').notNull(),
   userId: bigintString('user_id').notNull(),
   language: varchar('language', { length: 8 }).notNull(),
   categoryId: bigintString('category').notNull(),
