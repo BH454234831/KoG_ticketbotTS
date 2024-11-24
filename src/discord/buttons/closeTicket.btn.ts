@@ -4,9 +4,7 @@ import { ButtonComponent, Discord, Guard } from 'discordx';
 import { i18n } from 'i18n/instance';
 import { type Language } from 'i18n/constants';
 import { createButtons } from 'utils/discord/buttons';
-import { closeTicket } from 'discord/actions/closeTicket';
-
-export type TicketCloseAction = 'accept' | 'reject' | 'delete';
+import { closeTicket, type TicketCloseAction } from 'discord/actions/closeTicket';
 
 @Discord()
 export class CloseTicketButton {

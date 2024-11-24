@@ -5,7 +5,8 @@ import { resolveInteractionMemberData } from 'utils/discord/resolve';
 import discordTranscripts from 'discord-html-transcripts';
 import { type ButtonInteraction, type CommandInteraction, type TextChannel } from 'discord.js';
 import { type Language } from 'i18n/constants';
-import { type TicketCloseAction } from 'discord/buttons/closeTicket.btn';
+
+export type TicketCloseAction = 'accept' | 'reject' | 'delete';
 
 export async function closeTicket (interaction: CommandInteraction<'cached'> | ButtonInteraction<'cached'>, language: Language, action: TicketCloseAction): Promise<void> {
   const channel = interaction.channel ?? interaction.guild.channels.cache.get(interaction.channelId);
