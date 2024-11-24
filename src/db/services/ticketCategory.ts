@@ -67,6 +67,39 @@ export class DbTicketCategoryService {
       .execute();
   }
 
+  public async addRequiredRole (categoryId: string, roleId: string): Promise<void> {
+    const category = await this.select(categoryId);
+    if (category == null) return;
+
+    const roles = new Set(category.requiredRoleIds ?? []);
+    roles.add(roleId);
+
+    const newRoles = Array.from(roles);
+
+    await this.db
+      .update(ticketCategoryTable)
+      .set({ requiredRoleIds: newRoles })
+      .where(eq(ticketCategoryTable.id, categoryId))
+      .execute();
+  }
+
+  public async removeRequiredRole (categoryId: string, roleId: string): Promise<void> {
+    const category = await this.select(categoryId);
+    if (category == null) return;
+    if (category.requiredRoleIds == null) return;
+
+    const roles = new Set(category.requiredRoleIds);
+    roles.delete(roleId);
+
+    const newRoles = roles.size > 0 ? Array.from(roles) : null;
+
+    await this.db
+      .update(ticketCategoryTable)
+      .set({ requiredRoleIds: newRoles })
+      .where(eq(ticketCategoryTable.id, categoryId))
+      .execute();
+  }
+
   public async delete (categoryId: string): Promise<void> {
     await this.db
       .update(ticketCategoryTable)

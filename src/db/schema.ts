@@ -8,6 +8,7 @@ export const ticketStatusEnum = pgEnum('ticket_status', ticketStatusValues);
 
 export const userTable = pgTable('user', {
   id: bigintString('id').primaryKey(),
+  username: varchar('username', { length: 32 }),
   displayName: varchar('display_name', { length: 64 }),
   displayAvatarUrl: varchar('display_icon_url', { length: 256 }),
 

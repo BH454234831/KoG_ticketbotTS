@@ -59,6 +59,7 @@ export class OpenTicketButtons {
       },
       {
         id: interaction.user.id,
+        username: memberData.username,
         displayName: memberData.displayName,
         displayAvatarUrl: memberData.displayAvatarUrl,
       }

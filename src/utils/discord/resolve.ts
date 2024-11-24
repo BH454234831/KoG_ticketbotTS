@@ -17,7 +17,8 @@ export async function resolveInteractionMember (interaction: Interaction): Promi
 }
 
 export type ResolvedMemberData = {
-  displayName: string;
+  username: string | null;
+  displayName: string | null;
   displayAvatarUrl: string | null;
 };
 
@@ -25,16 +26,19 @@ export async function resolveInteractionMemberData (interaction: Interaction, us
   if (interaction.guild == null) throw new Error('guild is null');
   const member = interaction.guild.members.cache.get(userId) ?? await interaction.guild.members.fetch(userId).catch(() => null);
   if (member != null) return {
+    username: member.user.username,
     displayName: member.displayName,
     displayAvatarUrl: member.displayAvatarURL(),
   };
   const user = await interaction.client.users.fetch(userId).catch(() => null);
   if (user != null) return {
-    displayName: user.username,
+    username: user.username,
+    displayName: null,
     displayAvatarUrl: user.displayAvatarURL(),
   }
   return {
-    displayName: userId,
+    username: null,
+    displayName: null,
     displayAvatarUrl: null,
   };
 }

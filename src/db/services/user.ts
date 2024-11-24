@@ -24,7 +24,7 @@ export class DbUserService {
       .onConflictDoUpdate({
         target: [userTable.id],
         set: {
-          displayName: excluded(userTable.displayName),
+          displayName: coalesce(excluded(userTable.displayName), userTable.displayName),
           displayAvatarUrl: coalesce(excluded(userTable.displayAvatarUrl), userTable.displayAvatarUrl),
         },
       })
