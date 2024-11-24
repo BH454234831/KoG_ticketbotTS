@@ -56,18 +56,18 @@ client.on('interactionCreate', async interaction => {
   }
 });
 
+client.on('ready', async () => {
+  logger.info('Initializing application commands...');
+  await client.initApplicationCommands();
+  logger.info(`Ready! logged in as ${client.user?.username}`);
+})
+
 logger.info('Loading commands...');
 await importx(`${__dirname}/discord/**/*.{cmd,btn}.{js,ts}`)
 
 
 logger.info('Logging in...');
 await client.login(config.DISCORD_TOKEN);
-
-client.on('ready', async() => {
-logger.info('Initializing application commands...');
-await client.initApplicationCommands();
-logger.info(`Ready! logged in as ${client.user?.username}`);
-})
 
 logger.exceptions.handle(consoleWinstonTransport, fileErrorWinstonTransport);
 logger.rejections.handle(consoleWinstonTransport, fileErrorWinstonTransport);
