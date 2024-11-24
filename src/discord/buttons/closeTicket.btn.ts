@@ -107,8 +107,6 @@ export class CloseTicketButton {
       footerText: `${ticket.createdAt.toUTCString()}\n${language}-${category.name['en']}\n${ticketMemberData.displayName}`,
     });
 
-
-    const date = new Date
     await transcriptChannel.send({
       embeds: [{
         "title": "Ticket closed",
@@ -129,7 +127,7 @@ export class CloseTicketButton {
             "inline": false
           }
         ],
-        "timestamp": date.toISOString()
+        "timestamp": new Date().toISOString()
       }],
       files: [transcript],
     });

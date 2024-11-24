@@ -6,17 +6,6 @@ export const ticketStatusValues = ['open', 'accept', 'reject', 'delete'] as cons
 export type TicketStatus = typeof ticketStatusValues[number];
 export const ticketStatusEnum = pgEnum('ticket_status', ticketStatusValues);
 
-export const importantMessageTable = pgTable('important_message', {
-  messageId: bigintString('message_id').notNull().primaryKey(),
-  guildId: bigintString('guild_id').notNull(),
-  channelId: bigintString('channel_id').notNull(),
-
-  createdAt: createdAtTimestampDate,
-}, (table) => [
-  index('idx__important_message__channel_id').on(table.channelId),
-  index('idx__important_message__guild_id').on(table.guildId),
-]);
-
 export const userTable = pgTable('user', {
   id: bigintString('id').primaryKey(),
   username: varchar('username', { length: 32 }),

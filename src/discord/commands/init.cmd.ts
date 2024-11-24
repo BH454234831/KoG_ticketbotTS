@@ -4,7 +4,6 @@ import { i18n } from "i18n/instance";
 import { languages } from "i18n/constants";
 import _ from "lodash";
 import { createButtons } from "utils/discord/buttons";
-import { dbImportantMessageService } from "db/services";
 
 @Discord()
 export class InitCommands {
@@ -34,12 +33,6 @@ export class InitCommands {
     await interaction.channel.send({
       content: i18n.__('{{ticket_buttons.text}}', undefined),
       components: buttonRows,
-    });
-
-    await dbImportantMessageService.insert({
-      guildId: interaction.guild.id,
-      channelId: interaction.channelId,
-      messageId: interaction.id,
     });
 
     await interaction.editReply({
