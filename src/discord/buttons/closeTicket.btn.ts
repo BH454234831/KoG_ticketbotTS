@@ -107,8 +107,30 @@ export class CloseTicketButton {
       footerText: `${ticket.createdAt.toUTCString()}\n${language}-${category.name['en']}\n${ticketMemberData.displayName}`,
     });
 
+
+    const date = new Date
     await transcriptChannel.send({
-      content: `Ticket ${language} ${category.name['en']} by <@${ticket.userId}> (${ticketMemberData.displayName}) deleted by <@${interaction.user.id}> (${memberData.displayName})`,
+      embeds: [{
+        "title": "Ticket closed",
+        "color": 16711680,
+        "fields": [
+          {
+            "name": "Ticket category",
+            "value": `${language} ${category.name['en']}`,
+          },
+          {
+            "name": "Deleted by",
+            "value": `<@${interaction.user.id}> (${memberData.displayName})`,
+            "inline": false
+          },
+          {
+            "name": "Created by",
+            "value": `<@${ticket.userId}> (${ticketMemberData.displayName})`,
+            "inline": false
+          }
+        ],
+        "timestamp": date.toISOString()
+      }],
       files: [transcript],
     });
 
