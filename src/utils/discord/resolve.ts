@@ -1,8 +1,8 @@
 import { type BaseInteraction, GuildMember, type Interaction } from 'discord.js';
 
-export async function resolveInteractionMemberOrThrow (interaction: Interaction): Promise<GuildMember | null> {
+export async function resolveInteractionMemberOrThrow (interaction: Interaction): Promise<GuildMember> {
   if (interaction.member instanceof GuildMember) return interaction.member;
-  if (interaction.guild == null) return null;
+  if (interaction.guild == null) throw new Error('guild is null');
   const cacheMember = interaction.guild.members.cache.get(interaction.user.id);
   if (cacheMember != null) return cacheMember;
   return await interaction.guild.members.fetch(interaction.user.id);

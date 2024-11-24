@@ -18,7 +18,7 @@ export class SelectCategoryButtons {
 
     const categories = await dbTicketCategoryService.selectAll();
 
-    const member = (await resolveInteractionMemberOrThrow(interaction))!;
+    const member = await resolveInteractionMemberOrThrow(interaction);
 
     const allowedCategories = categories.filter(category => {
       if (category.requiredRoleIds != null && category.requiredRoleIds.length > 0) {
