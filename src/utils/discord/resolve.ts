@@ -1,15 +1,14 @@
-import { type BaseInteraction, GuildMember, type Interaction } from 'discord.js';
+import { type BaseInteraction, type Guild, type GuildMember } from 'discord.js';
 import { type ExtraErrorDataValue } from 'error';
 
-export async function resolveInteractionMemberOrThrow (interaction: Interaction): Promise<GuildMember> {
-  if (interaction.member instanceof GuildMember) return interaction.member;
+export async function resolveInteractionMemberOrThrow (interaction: BaseInteraction, userId = interaction.user.id): Promise<GuildMember> {
   if (interaction.guild == null) throw new Error('guild is null');
-  const cacheMember = interaction.guild.members.cache.get(interaction.user.id);
-  if (cacheMember != null) return cacheMember;
-  return await interaction.guild.members.fetch(interaction.user.id);
+  const member = interaction.guild.members.cache.get(userId);
+  if (member != null) return member;
+  return await interaction.guild.members.fetch(userId);
 }
 
-export async function resolveInteractionMember (interaction: Interaction): Promise<GuildMember | null> {
+export async function resolveInteractionMember (interaction: BaseInteraction, userId = interaction.user.id): Promise<GuildMember | null> {
   try {
     return await resolveInteractionMemberOrThrow(interaction);
   } catch (err) {
@@ -23,9 +22,8 @@ export type ResolvedMemberData = {
   displayAvatarUrl: string | null;
 };
 
-export async function resolveInteractionMemberData (interaction: BaseInteraction, userId: string = interaction.user.id): Promise<ResolvedMemberData> {
-  if (interaction.guild == null) throw new Error('guild is null');
-  const member = interaction.guild.members.cache.get(userId) ?? await interaction.guild.members.fetch(userId).catch(() => null);
+export async function resolveMemberData (guild: Guild, userId: string): Promise<ResolvedMemberData> {
+  const member = guild.members.cache.get(userId) ?? await guild.members.fetch(userId).catch(() => null);
   if (member != null) {
     return {
       username: member.user.username,
@@ -33,7 +31,7 @@ export async function resolveInteractionMemberData (interaction: BaseInteraction
       displayAvatarUrl: member.displayAvatarURL(),
     };
   }
-  const user = await interaction.client.users.fetch(userId).catch(() => null);
+  const user = await guild.client.users.fetch(userId).catch(() => null);
   if (user != null) {
     return {
       username: user.username,
@@ -46,6 +44,11 @@ export async function resolveInteractionMemberData (interaction: BaseInteraction
     displayName: null,
     displayAvatarUrl: null,
   };
+}
+
+export async function resolveInteractionMemberData (interaction: BaseInteraction, userId: string = interaction.user.id): Promise<ResolvedMemberData> {
+  if (interaction.guild == null) throw new Error('guild is null');
+  return await resolveMemberData(interaction.guild, userId);
 }
 
 export async function resolveInteractionBotMember (interaction: BaseInteraction): Promise<GuildMember> {

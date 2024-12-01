@@ -1,11 +1,13 @@
 import { ticketMessageFileTable, ticketMessageTable, type TicketStatus, ticketTable, ticketUserTable } from 'db/schema';
-import { and, eq, type InferInsertModel, type InferSelectModel, isNotNull } from 'drizzle-orm';
+import { and, desc, eq, type InferInsertModel, type InferSelectModel, isNotNull, isNull } from 'drizzle-orm';
 import { type PostgresJsDatabase } from 'drizzle-orm/postgres-js';
 import { type DbUserService, type UserInsertModel } from './user.js';
 import { type PgGenericDatabase } from 'utils/drizzle';
 
 export type TicketInsertModel = InferInsertModel<typeof ticketTable>;
 export type TicketSelectModel = InferSelectModel<typeof ticketTable>;
+
+export type TicketUserSelectModel = InferSelectModel<typeof ticketUserTable>;
 
 export type TicketMessageInsertModel = InferInsertModel<typeof ticketMessageTable>;
 export type TicketMessageSelectModel = InferSelectModel<typeof ticketMessageTable>;
@@ -36,7 +38,7 @@ export class DbTicketService {
         .values(ticketData)
         .execute();
 
-      await this._upsertTicketUser(ticketData.channelId, userData, tx);
+      await this._addTicketUser(ticketData.channelId, userData, tx);
     });
   }
 
@@ -76,31 +78,14 @@ export class DbTicketService {
     return tickets.map(ticket => ticket.ticket);
   }
 
-  public async setTicketStatus (channelId: string, status: TicketStatus): Promise<void> {
-    await this.db
+  public async setTicketStatus (channelId: string, status: TicketStatus): Promise<TicketSelectModel | null> {
+    const [ticket] = await this.db
       .update(ticketTable)
       .set({ status })
       .where(eq(ticketTable.channelId, channelId))
+      .returning()
       .execute();
-  }
-
-  public async addTicketUser (channelId: string, userData: UserInsertModel, dbtx: PgGenericDatabase = this.db): Promise<void> {
-    await dbtx.transaction(async (tx) => {
-      await this.dbUserService.upsert(userData, tx);
-
-      await this._upsertTicketUser(channelId, userData, tx);
-    });
-  }
-
-  public async deleteTicketUser (channelId: string, userId: string): Promise<void> {
-    await this.db
-      .update(ticketUserTable)
-      .set({ deletedAt: new Date() })
-      .where(and(
-        eq(ticketUserTable.channelId, channelId),
-        eq(ticketUserTable.userId, userId),
-      ))
-      .execute();
+    return ticket ?? null;
   }
 
   public async addTicketMessage (messageData: TicketMessageInsertModel, files: TicketMessageFileInsertModel[], userData: UserInsertModel): Promise<void> {
@@ -119,7 +104,36 @@ export class DbTicketService {
     });
   }
 
-  protected async _upsertTicketUser (channelId: string, userData: UserInsertModel, dbtx: PgGenericDatabase = this.db): Promise<void> {
+  public async updateTicketMessage (messageId: string, text: string): Promise<void> {
+    await this.db
+      .update(ticketMessageTable)
+      .set({ text })
+      .where(eq(ticketMessageTable.messageId, messageId))
+      .execute();
+  }
+
+  public async deleteTicketMessage (messageId: string): Promise<void> {
+    await this.db
+      .update(ticketMessageTable)
+      .set({ deletedAt: new Date() })
+      .where(eq(ticketMessageTable.messageId, messageId))
+      .execute();
+  }
+
+  public async getTicketUser (channelId: string): Promise<TicketUserSelectModel[]> {
+    const members = await this.db
+      .select()
+      .from(ticketUserTable)
+      .where(and(
+        eq(ticketUserTable.channelId, channelId),
+        isNull(ticketUserTable.deletedAt),
+      ))
+      .execute();
+
+    return members;
+  }
+
+  protected async _addTicketUser (channelId: string, userData: UserInsertModel, dbtx: PgGenericDatabase = this.db): Promise<void> {
     await dbtx
       .insert(ticketUserTable)
       .values({
@@ -133,5 +147,36 @@ export class DbTicketService {
         },
       })
       .execute();
+  }
+
+  public async addTicketUser (channelId: string, userData: UserInsertModel, dbtx: PgGenericDatabase = this.db): Promise<void> {
+    await dbtx.transaction(async (tx) => {
+      await this.dbUserService.upsert(userData, tx);
+
+      await this._addTicketUser(channelId, userData, tx);
+    });
+  }
+
+  public async deleteTicketUser (channelId: string, userId: string, dbtx: PgGenericDatabase = this.db): Promise<void> {
+    await dbtx
+      .update(ticketUserTable)
+      .set({ deletedAt: new Date() })
+      .where(and(
+        eq(ticketUserTable.channelId, channelId),
+        eq(ticketUserTable.userId, userId),
+      ))
+      .execute();
+  }
+
+  public async getLastTicketMessage (channelId: string): Promise<TicketMessageSelectModel | null> {
+    const [message] = await this.db
+      .select()
+      .from(ticketMessageTable)
+      .where(eq(ticketMessageTable.channelId, channelId))
+      .orderBy(desc(ticketMessageTable.createdAt))
+      .limit(1)
+      .execute();
+
+    return message ?? null;
   }
 }

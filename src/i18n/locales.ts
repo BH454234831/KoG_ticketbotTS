@@ -79,4 +79,25 @@ export default {
     'de': 'Abbrechen',
     'tr': 'Iptal et',
   },
+  'ticket.user_add': {
+    'en': '<@{{userId}}> added to the ticket',
+    'ru': '<@{{userId}}> добавлен в тикет',
+    'fr': '<@{{userId}}> ajouté au tâche',
+    'de': '<@{{userId}}> zum Ticket hinzugefügt',
+    'tr': '<@{{userId}}> tıkete eklendi',
+  },
+  'ticket.user_remove': {
+    'en': '<@{{userId}}> removed from the ticket',
+    'ru': '<@{{userId}}> удален из тикета',
+    'fr': '<@{{userId}}> retiré du tâche',
+    'de': '<@{{userId}}> vom Ticket entfernt',
+    'tr': '<@{{userId}}> tıketten kaldırıldı',
+  },
+  'ticket.member_leave': {
+    'en': '**{{displayName}}** <@{{userId}}> left the server',
+    'ru': '**{{displayName}}** <@{{userId}}> покинул сервер',
+    'fr': '**{{displayName}}** <@{{userId}}> a quitté le serveur',
+    'de': '**{{displayName}}** <@{{userId}}> hat den Server verlassen',
+    'tr': '**{{displayName}}** <@{{userId}}> sunucudan ayrıldı',
+  },
 } as const satisfies LocaleRecords;

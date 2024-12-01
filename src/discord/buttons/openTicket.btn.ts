@@ -1,5 +1,6 @@
 import { dbTicketCategoryService, dbTicketService } from 'db/services';
 import { ButtonInteraction, ChannelType, PermissionFlagsBits } from 'discord.js';
+import { addTicketUser } from 'discord/actions/ticketUser';
 import { TooOldGuard } from 'discord/guards';
 import { ButtonComponent, Discord, Guard } from 'discordx';
 import { type Language } from 'i18n/constants';
@@ -63,11 +64,7 @@ export class OpenTicketButtons {
       return;
     }
 
-    await channel.permissionOverwrites.create(interaction.user, {
-      ViewChannel: true,
-    });
-
-    await thread.members.add(interaction.user);
+    await addTicketUser(thread, interaction.user.id, { memberData });
 
     const buttonRows = createButtons([
       { id: `thread@${language}@close`, label: i18n.__('{{thread_buttons.close.labels}}', undefined, language), emoji: '🔒' },

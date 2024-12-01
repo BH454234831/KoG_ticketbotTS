@@ -1,5 +1,5 @@
 import { userTable } from 'db/schema';
-import { type InferInsertModel, type InferSelectModel } from 'drizzle-orm';
+import { eq, type InferInsertModel, type InferSelectModel } from 'drizzle-orm';
 import { type PostgresJsDatabase } from 'drizzle-orm/postgres-js';
 import { coalesce, excluded, type PgGenericDatabase } from 'utils/drizzle';
 
@@ -15,6 +15,16 @@ export class DbUserService {
 
   public constructor (options: DbUserServiceOptions) {
     this.db = options.db;
+  }
+
+  public async getById (id: string): Promise<UserSelectModel | null> {
+    const [user] = await this.db
+      .select()
+      .from(userTable)
+      .where(eq(userTable.id, id))
+      .execute();
+
+    return user ?? null;
   }
 
   public async upsert (user: UserInsertModel, dbtx: PgGenericDatabase = this.db): Promise<void> {

@@ -1,14 +1,15 @@
 import { config } from 'config';
-import { dbTicketCategoryService, dbTicketService } from 'db/services';
+import { dbTicketCategoryService, dbTicketService, type TicketSelectModel } from 'db/services';
 import { logger } from 'logger';
 import { resolveInteractionMemberData } from 'utils/discord/resolve';
 import discordTranscripts from 'discord-html-transcripts';
 import { type ButtonInteraction, type CommandInteraction, type TextChannel } from 'discord.js';
 import { type Language } from 'i18n/constants';
+import { removeTicketUsers } from './ticketUser.js';
 
 export type TicketCloseAction = 'accept' | 'reject' | 'delete';
 
-export async function closeTicket (interaction: CommandInteraction<'cached'> | ButtonInteraction<'cached'>, language: Language, action: TicketCloseAction): Promise<void> {
+export async function closeTicket (interaction: CommandInteraction<'cached'> | ButtonInteraction<'cached'>, language: Language, action: TicketCloseAction, _ticket?: TicketSelectModel): Promise<void> {
   const channel = interaction.channel ?? interaction.guild.channels.cache.get(interaction.channelId);
 
   if (channel == null) {
@@ -31,7 +32,7 @@ export async function closeTicket (interaction: CommandInteraction<'cached'> | B
     return;
   }
 
-  const ticket = await dbTicketService.getTicketByChannelId(interaction.channelId);
+  const ticket = _ticket ?? await dbTicketService.getTicketByChannelId(interaction.channelId);
   if (ticket == null) {
     logger.info(`[CloseTicketButton][closeTicketCancel] ticket not found: ${interaction.channelId}`);
     return;
@@ -44,13 +45,7 @@ export async function closeTicket (interaction: CommandInteraction<'cached'> | B
 
   await dbTicketService.setTicketStatus(interaction.channelId, action);
 
-  const otherTickets = await dbTicketService.getOpenTicketsByUserId(interaction.user.id, ticket.categoryId);
-
-  await channel.members.remove(interaction.user);
-
-  if (otherTickets.length === 0) {
-    await parent.permissionOverwrites.delete(interaction.user);
-  }
+  await removeTicketUsers(channel);
 
   const transcriptChannel = interaction.guild.channels.cache.get(config.TRANSCRIPT_CHANNEL_ID);
   if (transcriptChannel == null) return;

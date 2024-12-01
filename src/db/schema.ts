@@ -1,6 +1,8 @@
-import { bigint, foreignKey, index, integer, jsonb, pgEnum, pgTable, primaryKey, varchar } from 'drizzle-orm/pg-core';
-import { type Language } from 'i18n/constants';
+import { bigint, foreignKey, index, integer, jsonb, pgEnum, pgTable, primaryKey, text, varchar } from 'drizzle-orm/pg-core';
+import { languages, type Language } from 'i18n/constants';
 import { bigintString, bytea, createdAtTimestampDate, deletedAtTimestampDate, updatedAtTimestampDate } from 'utils/drizzle';
+
+export const languageEnum = pgEnum('language', languages);
 
 export const ticketStatusValues = ['open', 'accept', 'reject', 'delete'] as const;
 export type TicketStatus = typeof ticketStatusValues[number];
@@ -35,7 +37,7 @@ export const ticketTable = pgTable('ticket', {
   channelId: bigintString('channel_id').notNull().primaryKey(),
   guildId: bigintString('guild_id').notNull(),
   userId: bigintString('user_id').notNull(),
-  language: varchar('language', { length: 8 }).notNull(),
+  language: languageEnum('language').notNull(),
   categoryId: bigintString('category').notNull(),
   status: ticketStatusEnum('ticket_status').notNull().default('open'),
 
@@ -68,10 +70,12 @@ export const ticketMessageTable = pgTable('ticket_message', {
   messageId: bigintString('message_id').primaryKey(),
   channelId: bigintString('channel_id').notNull(),
   userId: bigintString('user_id').notNull(),
-  displayName: varchar('user_name', { length: 64 }).notNull(),
-  displayAvatarUrl: varchar('user_icon', { length: 256 }).notNull(),
+
+  text: text('text').notNull(),
 
   createdAt: createdAtTimestampDate,
+  updatedAt: updatedAtTimestampDate,
+  deletedAt: deletedAtTimestampDate,
 }, (table) => [
   foreignKey({ name: 'fk__ticket_message__channel_id', columns: [table.channelId], foreignColumns: [ticketTable.channelId] }).onUpdate('cascade').onDelete('cascade'),
   foreignKey({ name: 'fk__ticket_message__user_id', columns: [table.userId], foreignColumns: [userTable.id] }).onUpdate('cascade').onDelete('cascade'),
@@ -85,7 +89,7 @@ export const ticketMessageFileTable = pgTable('ticket_message_file', {
   messageId: bigintString('message_id').notNull(),
 
   file: bytea('file').notNull(),
-  mime: varchar('mime', { length: 32 }).notNull(),
+  mime: varchar('mime', { length: 32 }),
   name: varchar('name', { length: 256 }).notNull(),
   url: varchar('url', { length: 256 }).notNull(),
 

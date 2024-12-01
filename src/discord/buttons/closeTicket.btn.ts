@@ -1,15 +1,16 @@
 import { ButtonInteraction, ButtonStyle } from 'discord.js';
-import { ThreadModeratorGuard } from 'discord/guards';
+import { PermissionGuard } from 'discord/guards';
 import { ButtonComponent, Discord, Guard } from 'discordx';
 import { i18n } from 'i18n/instance';
 import { type Language } from 'i18n/constants';
 import { createButtons } from 'utils/discord/buttons';
 import { closeTicket, type TicketCloseAction } from 'discord/actions/closeTicket';
+import { defaultTicketPermissions } from 'discord/constants';
 
 @Discord()
 export class CloseTicketButton {
   @ButtonComponent({ id: /^thread@[a-z-]+@close$/i })
-  @Guard(ThreadModeratorGuard)
+  @Guard(PermissionGuard(defaultTicketPermissions))
   public async closeTicketRequest (interaction: ButtonInteraction<'cached'>): Promise<void> {
     await interaction.deferReply({ ephemeral: true });
 
@@ -40,7 +41,7 @@ export class CloseTicketButton {
   }
 
   @ButtonComponent({ id: /^thread@[a-z-]+@close@[a-z]+$/i })
-  @Guard(ThreadModeratorGuard)
+  @Guard(PermissionGuard(defaultTicketPermissions))
   public async closeTicketAction (interaction: ButtonInteraction<'cached'>): Promise<void> {
     const [, language,, action] = interaction.customId.split('@') as [string, Language, string, TicketCloseAction];
 

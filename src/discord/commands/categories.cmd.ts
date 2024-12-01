@@ -1,5 +1,5 @@
 import { dbTicketCategoryService } from 'db/services';
-import { ApplicationCommandOptionType, ChannelType, CommandInteraction, type Role, TextChannel } from 'discord.js';
+import { ApplicationCommandOptionType, ChannelType, CommandInteraction, PermissionFlagsBits, type Role, TextChannel } from 'discord.js';
 import { categoryAutocomplete } from 'discord/autocomplete';
 import { Discord, Slash, SlashGroup, SlashOption } from 'discordx';
 import { translateService } from 'services';
@@ -8,7 +8,7 @@ import { translateService } from 'services';
 @SlashGroup({
   name: 'categories',
   description: 'Manage categories',
-  defaultMemberPermissions: 0n,
+  defaultMemberPermissions: PermissionFlagsBits.ManageThreads,
   dmPermission: false,
 })
 @SlashGroup('categories')
