@@ -128,7 +128,7 @@ export class CategoriesCommands {
         description: 'Category welcome message in English',
         required: false,
         type: ApplicationCommandOptionType.String,
-        maxLength: 2000,
+        maxLength: 1900,
       })
       welcomeEn: string | undefined,
 
@@ -166,7 +166,40 @@ export class CategoriesCommands {
     });
 
     await interaction.editReply({
-      content: 'Category created',
+      content: `Category ${names.en} created`,
+    });
+  }
+
+  @Slash({
+    name: 'delete',
+    description: 'Delete category',
+  })
+  public async deleteCategory (
+    @SlashOption({
+      name: 'category',
+      description: 'Category',
+      required: true,
+      type: ApplicationCommandOptionType.String,
+      autocomplete: categoryAutocomplete,
+    })
+      categoryId: string,
+
+      interaction: CommandInteraction<'cached'>,
+  ): Promise<void> {
+    await interaction.deferReply();
+
+    const category = await dbTicketCategoryService.select(categoryId);
+    if (category == null) {
+      await interaction.editReply({
+        content: 'Category not found',
+      });
+      return;
+    }
+
+    await dbTicketCategoryService.delete(categoryId);
+
+    await interaction.editReply({
+      content: `Category ${category.name.en} deleted`,
     });
   }
 }

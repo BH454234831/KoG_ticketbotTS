@@ -1,11 +1,13 @@
 import { dbTicketCategoryService, dbTicketService, type TicketSelectModel } from 'db/services';
 import { ChannelType, type Message, type Client, type ThreadChannel } from 'discord.js';
+import { loadMessageImages } from 'discord/actions/loadImages';
 import { memberLeave } from 'discord/actions/memberLeave';
-import { ArgsOf, On } from 'discordx';
+import { ArgsOf, Discord, On } from 'discordx';
 import { logger } from 'logger';
-import { fetchMessagesSeparate } from 'utils/discord/message';
+import { fetchMessagesSeparate, fetchMessagesSeparateAfter } from 'utils/discord/message';
 import { resolveMemberData } from 'utils/discord/resolve';
 
+@Discord()
 export class TicketEvents {
   @On({ event: 'ready' })
   public async checkDeletedCategories ([client]: ArgsOf<'ready'>): Promise<void> {
@@ -58,8 +60,14 @@ export class TicketEvents {
 
     const lastMessage = await dbTicketService.getLastTicketMessage(ticket.channelId);
 
-    for await (const message of fetchMessagesSeparate({ channel, limit: 100, after: lastMessage?.messageId })) {
-      await this.messageCreate([message]);
+    if (lastMessage == null) {
+      for await (const message of fetchMessagesSeparate({ channel, limit: 100 })) {
+        await this.messageCreate([message]);
+      }
+    } else {
+      for await (const message of fetchMessagesSeparateAfter({ channel, limit: 100, after: lastMessage.messageId })) {
+        await this.messageCreate([message]);
+      }
     }
   }
 
@@ -83,6 +91,8 @@ export class TicketEvents {
 
   @On({ event: 'threadDelete' })
   public async threadDelete ([thread]: ArgsOf<'threadDelete'>): Promise<void> {
+    if (thread.type !== ChannelType.PrivateThread) return;
+
     await dbTicketService.setTicketStatus(thread.id, 'delete');
   }
 
@@ -90,29 +100,19 @@ export class TicketEvents {
   public async messageCreate ([message]: [Message]): Promise<void> {
     if (!message.inGuild()) return;
     if (!message.channel.isThread()) return;
-    if (message.channel.type === ChannelType.PrivateThread) return;
+    if (message.channel.type !== ChannelType.PrivateThread) return;
+
+    // Ignore bot messages
+    if (message.author.bot) return;
 
     const ticket = await dbTicketService.getTicketByChannelId(message.channel.id);
     if (ticket == null) return;
 
     const member = await resolveMemberData(message.guild, message.author.id);
 
-    const files = await Promise.all(message.attachments.map(async (attachment) => {
-      // Save images only that are less than 10MB
-      if (attachment.contentType == null || !attachment.contentType.startsWith('image/')) return null;
-      if (attachment.size > 10 * 1024 * 1024) return null;
+    const files = await loadMessageImages(message);
 
-      const file = await fetch(attachment.proxyURL);
-      const buffer = Buffer.from(await file.arrayBuffer());
-
-      return {
-        messageId: message.id,
-        file: buffer,
-        mime: attachment.contentType,
-        name: attachment.name,
-        url: attachment.url,
-      };
-    }));
+    console.log(message);
 
     await dbTicketService.addTicketMessage(
       {
@@ -121,12 +121,14 @@ export class TicketEvents {
         userId: message.author.id,
         text: message.content,
       },
-      files.filter(file => file != null),
+      files,
       {
         id: message.author.id,
         username: member.username,
         displayName: member.displayName,
         displayAvatarUrl: member.displayAvatarUrl,
+        bot: message.author.bot,
+        webhook: message.webhookId != null,
       },
     );
   }
@@ -135,7 +137,7 @@ export class TicketEvents {
   public async messageUpdate ([newMessage]: ArgsOf<'messageUpdate'>): Promise<void> {
     if (!newMessage.inGuild()) return;
     if (!newMessage.channel.isThread()) return;
-    if (newMessage.channel.type === ChannelType.PrivateThread) return;
+    if (newMessage.channel.type !== ChannelType.PrivateThread) return;
 
     await dbTicketService.updateTicketMessage(newMessage.id, newMessage.content);
   }

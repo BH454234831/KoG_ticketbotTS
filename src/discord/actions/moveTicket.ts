@@ -1,8 +1,9 @@
-import { type ThreadChannel, WebhookClient } from 'discord.js';
+import { AttachmentBuilder, type ThreadChannel, WebhookClient } from 'discord.js';
 import { createTicketChannel } from './createTicket.js';
 import { dbTicketService, type TicketSelectModel } from 'db/services';
-import { fetchMessages } from 'utils/discord/message';
+import { fetchMessagesAll } from 'utils/discord/message';
 import { resolveMemberData } from 'utils/discord/resolve';
+import { loadMessageImages } from './loadImages.js';
 
 export async function moveTicket (oldThread: ThreadChannel, categoryId: string, options?: { ticket?: TicketSelectModel }): Promise<{ thread: ThreadChannel }> {
   const ticket = options?.ticket ?? await dbTicketService.getTicketByChannelId(oldThread.id);
@@ -15,7 +16,7 @@ export async function moveTicket (oldThread: ThreadChannel, categoryId: string, 
 
   const { thread } = await createTicketChannel(oldThread.guild, categoryId, ticket.language, ticket.userId, ticketUserIds);
 
-  await dbTicketService.updateTicketCategory(oldThread.id, thread.id);
+  await dbTicketService.updateTicketCategory(oldThread.id, categoryId, thread.id);
 
   if (thread.parent == null) {
     throw new Error(`Thread ${thread.id} parent is null`);
@@ -27,17 +28,29 @@ export async function moveTicket (oldThread: ThreadChannel, categoryId: string, 
 
   const webhookClient = new WebhookClient({ url: webhook.url });
 
-  for await (const batch of fetchMessages({ channel: oldThread, limit: 100 })) {
-    for (const message of batch.values()) {
-      const memberData = await resolveMemberData(oldThread.guild, message.author.id);
+  const _messages = await fetchMessagesAll({ channel: oldThread, limit: 3 });
+  const messages = _messages.values().toArray();
+  messages.reverse();
 
-      await webhookClient.send({
-        content: message.content,
-        username: memberData.displayName ?? message.author.username ?? message.author.id,
-        avatarURL: memberData.displayAvatarUrl ?? message.author.avatarURL() ?? message.author.defaultAvatarURL,
-        threadId: thread.id,
+  for (const message of messages) {
+    const files = await loadMessageImages(message);
+
+    if (message.content === '' && files.length === 0) continue;
+
+    const memberData = await resolveMemberData(oldThread.guild, message.author.id);
+    const attachments = files.map((file) => {
+      return new AttachmentBuilder(file.file, {
+        name: file.name,
       });
-    }
+    });
+
+    await webhookClient.send({
+      content: message.content,
+      username: memberData.displayName ?? message.author.username ?? message.author.id,
+      avatarURL: memberData.displayAvatarUrl ?? message.author.avatarURL() ?? message.author.defaultAvatarURL,
+      threadId: thread.id,
+      files: attachments,
+    });
   }
 
   await oldThread.delete();

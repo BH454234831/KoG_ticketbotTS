@@ -1,5 +1,6 @@
-import { dbTicketCategoryService } from 'db/services';
+import { dbTicketCategoryService, dbTicketService } from 'db/services';
 import { type AutocompleteInteraction } from 'discord.js';
+import { logger } from 'logger';
 
 export async function categoryAutocomplete (interaction: AutocompleteInteraction): Promise<void> {
   const categories = await dbTicketCategoryService.selectSearch(interaction.options.getFocused());
@@ -17,12 +18,21 @@ export async function categoryAutocompleteExceptCurrent (interaction: Autocomple
     return;
   }
   if (interaction.channel?.parentId == null) {
+    logger.debug('[Autocomplete][categoryAutocompleteExceptCurrent] channel.parentId is null');
     await interaction.respond([]);
     return;
   }
 
-  const currentCategory = await dbTicketCategoryService.select(interaction.channel.parentId);
+  const ticket = await dbTicketService.getTicketByChannelId(interaction.channel.id);
+  if (ticket == null) {
+    logger.debug('[Autocomplete][categoryAutocompleteExceptCurrent] ticket is null');
+    await interaction.respond([]);
+    return;
+  }
+
+  const currentCategory = await dbTicketCategoryService.select(ticket.categoryId);
   if (currentCategory == null) {
+    logger.debug('[Autocomplete][categoryAutocompleteExceptCurrent] currentCategory is null');
     await interaction.respond([]);
     return;
   }

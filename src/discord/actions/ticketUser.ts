@@ -24,7 +24,10 @@ export async function removeTicketUser (thread: ThreadChannel, userId: string, o
   const channel = thread.parent;
   if (channel == null) throw new Error('channel is null');
 
-  const category = await dbTicketCategoryService.select(channel.id);
+  const ticket = await dbTicketService.getTicketByChannelId(thread.id);
+  if (ticket == null) throw new Error('ticket is null');
+
+  const category = await dbTicketCategoryService.select(ticket.categoryId);
   if (category == null) throw new Error('category is null');
 
   const otherTickets = await dbTicketService.getOpenTicketsByUserId(userId, category.id.toString());

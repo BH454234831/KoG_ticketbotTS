@@ -1,4 +1,4 @@
-import { bigint, foreignKey, index, integer, jsonb, pgEnum, pgTable, primaryKey, text, varchar } from 'drizzle-orm/pg-core';
+import { bigint, boolean, foreignKey, index, integer, jsonb, pgEnum, pgTable, primaryKey, text, varchar } from 'drizzle-orm/pg-core';
 import { languages, type Language } from 'i18n/constants';
 import { bigintString, bytea, createdAtTimestampDate, deletedAtTimestampDate, updatedAtTimestampDate } from 'utils/drizzle';
 
@@ -13,6 +13,8 @@ export const userTable = pgTable('user', {
   username: varchar('username', { length: 32 }),
   displayName: varchar('display_name', { length: 64 }),
   displayAvatarUrl: varchar('display_icon_url', { length: 256 }),
+  bot: boolean('bot').notNull().default(false),
+  webhook: boolean('webhook').notNull().default(false),
 
   createdAt: createdAtTimestampDate,
   updatedAt: updatedAtTimestampDate,

@@ -67,6 +67,8 @@ export async function createTicketChannel (guild: Guild, categoryId: string, lan
       ? i18n.__(category.welcome[language], {
         username: memberData.displayName ?? memberData.username ?? userId,
         userId,
+        userTag: `<@${userId}>`,
+        language,
       }, language)
       : undefined,
     components: buttonRows,

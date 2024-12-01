@@ -88,10 +88,10 @@ export class DbTicketService {
     return ticket ?? null;
   }
 
-  public async updateTicketCategory (channelId: string, categoryId: string): Promise<TicketSelectModel | null> {
+  public async updateTicketCategory (channelId: string, categoryId: string, newChannelId: string): Promise<TicketSelectModel | null> {
     const [ticket] = await this.db
       .update(ticketTable)
-      .set({ categoryId })
+      .set({ categoryId, channelId: newChannelId })
       .where(eq(ticketTable.channelId, channelId))
       .returning()
       .execute();
@@ -105,12 +105,16 @@ export class DbTicketService {
       await tx
         .insert(ticketMessageTable)
         .values(messageData)
+        .onConflictDoNothing()
         .execute();
 
-      await tx
-        .insert(ticketMessageFileTable)
-        .values(files)
-        .execute();
+      if (files.length > 0) {
+        await tx
+          .insert(ticketMessageFileTable)
+          .values(files)
+          .onConflictDoNothing()
+          .execute();
+      }
     });
   }
 
