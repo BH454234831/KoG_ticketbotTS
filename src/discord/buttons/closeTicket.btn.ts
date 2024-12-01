@@ -45,6 +45,8 @@ export class CloseTicketButton {
   public async closeTicketAction (interaction: ButtonInteraction<'cached'>): Promise<void> {
     const [, language,, action] = interaction.customId.split('@') as [string, Language, string, TicketCloseAction];
 
+    await interaction.deferReply({ ephemeral: true });
+
     await closeTicket(interaction, language, action);
   }
 }

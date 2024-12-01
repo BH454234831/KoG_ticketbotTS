@@ -41,8 +41,6 @@ export async function closeTicket (interaction: CommandInteraction<'cached'> | B
   const category = await dbTicketCategoryService.select(ticket.categoryId);
   if (category == null) return;
 
-  await interaction.deferReply({ ephemeral: true });
-
   await dbTicketService.setTicketStatus(interaction.channelId, action);
 
   await removeTicketUsers(channel);
