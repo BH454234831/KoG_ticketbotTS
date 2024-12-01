@@ -41,7 +41,7 @@ export async function removeTicketUser (thread: ThreadChannel, userId: string, o
 }
 
 export async function removeTicketUsers (thread: ThreadChannel, options?: { saveDb?: boolean }): Promise<void> {
-  const members = await dbTicketService.getTicketUser(thread.id);
+  const members = await dbTicketService.getTicketUsers(thread.id);
 
   for (const member of members) {
     await removeTicketUser(thread, member.userId, options);

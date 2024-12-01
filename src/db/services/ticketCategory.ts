@@ -1,5 +1,5 @@
 import { ticketCategoryTable } from 'db/schema';
-import { and, eq, ilike, type InferInsertModel, type InferSelectModel, isNull } from 'drizzle-orm';
+import { and, eq, ilike, type InferInsertModel, type InferSelectModel, isNull, not } from 'drizzle-orm';
 import { type PostgresJsDatabase } from 'drizzle-orm/postgres-js';
 import { type Language } from 'i18n/constants';
 import { jsonFieldDeep } from 'utils/drizzle';
@@ -46,13 +46,14 @@ export class DbTicketCategoryService {
       .execute();
   }
 
-  public async selectSearch (name: string): Promise<TicketCategorySelectNodel[]> {
+  public async selectSearch (name: string, exceptCategoryId?: bigint): Promise<TicketCategorySelectNodel[]> {
     return await this.db
       .select()
       .from(ticketCategoryTable)
       .where(and(
         ilike(jsonFieldDeep(ticketCategoryTable.name, ['en']), `%${name}%`),
         isNull(ticketCategoryTable.deletedAt),
+        exceptCategoryId != null ? not(eq(ticketCategoryTable.id, exceptCategoryId)) : undefined,
       ))
       .execute();
   }

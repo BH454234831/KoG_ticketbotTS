@@ -1,5 +1,5 @@
 import { ticketMessageFileTable, ticketMessageTable, type TicketStatus, ticketTable, ticketUserTable } from 'db/schema';
-import { and, desc, eq, type InferInsertModel, type InferSelectModel, isNotNull, isNull } from 'drizzle-orm';
+import { and, desc, eq, type InferInsertModel, type InferSelectModel, isNotNull, isNull, not } from 'drizzle-orm';
 import { type PostgresJsDatabase } from 'drizzle-orm/postgres-js';
 import { type DbUserService, type UserInsertModel } from './user.js';
 import { type PgGenericDatabase } from 'utils/drizzle';
@@ -88,6 +88,16 @@ export class DbTicketService {
     return ticket ?? null;
   }
 
+  public async updateTicketCategory (channelId: string, categoryId: string): Promise<TicketSelectModel | null> {
+    const [ticket] = await this.db
+      .update(ticketTable)
+      .set({ categoryId })
+      .where(eq(ticketTable.channelId, channelId))
+      .returning()
+      .execute();
+    return ticket ?? null;
+  }
+
   public async addTicketMessage (messageData: TicketMessageInsertModel, files: TicketMessageFileInsertModel[], userData: UserInsertModel): Promise<void> {
     await this.db.transaction(async (tx) => {
       await this.dbUserService.upsert(userData, tx);
@@ -120,13 +130,14 @@ export class DbTicketService {
       .execute();
   }
 
-  public async getTicketUser (channelId: string): Promise<TicketUserSelectModel[]> {
+  public async getTicketUsers (channelId: string, exceptId?: string): Promise<TicketUserSelectModel[]> {
     const members = await this.db
       .select()
       .from(ticketUserTable)
       .where(and(
         eq(ticketUserTable.channelId, channelId),
         isNull(ticketUserTable.deletedAt),
+        exceptId != null ? not(eq(ticketUserTable.userId, exceptId)) : undefined,
       ))
       .execute();
 

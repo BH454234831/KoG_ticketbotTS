@@ -11,3 +11,28 @@ export async function categoryAutocomplete (interaction: AutocompleteInteraction
     };
   }));
 }
+
+export async function categoryAutocompleteExceptCurrent (interaction: AutocompleteInteraction): Promise<void> {
+  if (!interaction.inGuild()) {
+    return;
+  }
+  if (interaction.channel?.parentId == null) {
+    await interaction.respond([]);
+    return;
+  }
+
+  const currentCategory = await dbTicketCategoryService.select(interaction.channel.parentId);
+  if (currentCategory == null) {
+    await interaction.respond([]);
+    return;
+  }
+
+  const categories = await dbTicketCategoryService.selectSearch(interaction.options.getFocused(), currentCategory.id);
+
+  await interaction.respond(categories.slice(0, 25).map(category => {
+    return {
+      name: category.name.en,
+      value: category.id.toString(),
+    };
+  }));
+}

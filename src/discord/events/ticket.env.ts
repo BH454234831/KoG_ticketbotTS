@@ -1,8 +1,9 @@
 import { dbTicketCategoryService, dbTicketService, type TicketSelectModel } from 'db/services';
-import { ChannelType, type Client, type ThreadChannel } from 'discord.js';
+import { ChannelType, type Message, type Client, type ThreadChannel } from 'discord.js';
 import { memberLeave } from 'discord/actions/memberLeave';
 import { ArgsOf, On } from 'discordx';
 import { logger } from 'logger';
+import { fetchMessagesSeparate } from 'utils/discord/message';
 import { resolveMemberData } from 'utils/discord/resolve';
 
 export class TicketEvents {
@@ -57,19 +58,8 @@ export class TicketEvents {
 
     const lastMessage = await dbTicketService.getLastTicketMessage(ticket.channelId);
 
-    let lastMessageId = lastMessage?.messageId;
-    while (true) {
-      const messages = await channel.messages.fetch({ limit: 100, after: lastMessageId });
-
-      for (const message of messages.values()) {
-        await this.messageCreate([message]);
-      }
-
-      if (messages.size < 100) {
-        break;
-      }
-
-      lastMessageId = messages.last()?.id;
+    for await (const message of fetchMessagesSeparate({ channel, limit: 100, after: lastMessage?.messageId })) {
+      await this.messageCreate([message]);
     }
   }
 
@@ -97,7 +87,7 @@ export class TicketEvents {
   }
 
   @On({ event: 'messageCreate' })
-  public async messageCreate ([message]: ArgsOf<'messageCreate'>): Promise<void> {
+  public async messageCreate ([message]: [Message]): Promise<void> {
     if (!message.inGuild()) return;
     if (!message.channel.isThread()) return;
     if (message.channel.type === ChannelType.PrivateThread) return;
