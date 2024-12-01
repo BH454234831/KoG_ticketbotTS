@@ -103,7 +103,7 @@ export class TicketEvents {
     if (message.channel.type !== ChannelType.PrivateThread) return;
 
     // Ignore bot messages
-    if (message.author.bot) return;
+    // if (message.author.bot) return;
 
     const ticket = await dbTicketService.getTicketByChannelId(message.channel.id);
     if (ticket == null) return;
@@ -111,8 +111,6 @@ export class TicketEvents {
     const member = await resolveMemberData(message.guild, message.author.id);
 
     const files = await loadMessageImages(message);
-
-    console.log(message);
 
     await dbTicketService.addTicketMessage(
       {
