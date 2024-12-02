@@ -18,7 +18,7 @@ export class CategoriesCommands {
     description: 'List categories',
   })
   public async listCategories (interaction: CommandInteraction): Promise<void> {
-    await interaction.deferReply();
+    await interaction.deferReply({ephemeral: true});
 
     const categories = await dbTicketCategoryService.selectAll();
 
@@ -53,7 +53,7 @@ export class CategoriesCommands {
 
       interaction: CommandInteraction,
   ): Promise<void> {
-    await interaction.deferReply();
+    await interaction.deferReply({ephemeral: true});
 
     const category = await dbTicketCategoryService.select(categoryId);
     if (category == null) {
@@ -151,7 +151,7 @@ export class CategoriesCommands {
 
       interaction: CommandInteraction<'cached' | 'raw'>,
   ): Promise<void> {
-    await interaction.deferReply();
+    await interaction.deferReply({ephemeral: true});
 
     const names = await translateService.translateToAll(nameEn);
     const welcomes = welcomeEn != null ? await translateService.translateToAll(welcomeEn) : null;
@@ -186,7 +186,7 @@ export class CategoriesCommands {
 
       interaction: CommandInteraction<'cached'>,
   ): Promise<void> {
-    await interaction.deferReply();
+    await interaction.deferReply({ephemeral: true});
 
     const category = await dbTicketCategoryService.select(categoryId);
     if (category == null) {

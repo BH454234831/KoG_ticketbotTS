@@ -1,4 +1,4 @@
-import { type BaseInteraction, type Guild, type GuildMember } from 'discord.js';
+import { ChannelType, DMChannel, GuildChannel, GuildTextBasedChannel, TextBasedChannel, type BaseInteraction, type Guild, type GuildMember } from 'discord.js';
 import { type ExtraErrorDataValue } from 'error';
 
 export async function resolveInteractionMemberOrThrow (interaction: BaseInteraction, userId = interaction.user.id): Promise<GuildMember> {
@@ -49,6 +49,11 @@ export async function resolveMemberData (guild: Guild, userId: string): Promise<
 export async function resolveInteractionMemberData (interaction: BaseInteraction, userId: string = interaction.user.id): Promise<ResolvedMemberData> {
   if (interaction.guild == null) throw new Error('guild is null');
   return await resolveMemberData(interaction.guild, userId);
+}
+
+export async function resolveChannelMemberData(channel: GuildTextBasedChannel, userId: string): Promise<ResolvedMemberData> {
+  if (channel.guild == null) throw new Error('guild is null');
+  return await resolveMemberData(channel.guild, userId);
 }
 
 export async function resolveInteractionBotMember (interaction: BaseInteraction): Promise<GuildMember> {
