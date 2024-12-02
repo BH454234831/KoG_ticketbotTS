@@ -1,5 +1,5 @@
 import { ticketMessageFileTable, ticketMessageTable, type TicketStatus, ticketTable, ticketUserTable } from 'db/schema';
-import { and, desc, eq, type InferInsertModel, type InferSelectModel, isNotNull, isNull, not } from 'drizzle-orm';
+import { and, desc, eq, type InferInsertModel, type InferSelectModel, isNotNull, isNull, not, or } from 'drizzle-orm';
 import { type PostgresJsDatabase } from 'drizzle-orm/postgres-js';
 import { type DbUserService, type UserInsertModel } from './user.js';
 import { type PgGenericDatabase } from 'utils/drizzle';
@@ -56,7 +56,10 @@ export class DbTicketService {
     const tickets = await this.db
       .select()
       .from(ticketTable)
-      .where(eq(ticketTable.status, 'open'))
+      .where(or(
+        eq(ticketTable.status, 'new'),
+        eq(ticketTable.status, 'inprogress'),
+       ))
       .execute();
 
     return tickets;
@@ -71,7 +74,10 @@ export class DbTicketService {
         eq(ticketUserTable.userId, userId),
         isNotNull(ticketUserTable.deletedAt),
         categoryId != null ? eq(ticketTable.categoryId, categoryId) : undefined,
-        eq(ticketTable.status, 'open'),
+        (or(
+          eq(ticketTable.status, 'new'),
+          eq(ticketTable.status, 'inprogress'),
+         ))
       ))
       .execute();
 

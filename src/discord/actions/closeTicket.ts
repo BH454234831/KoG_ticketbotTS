@@ -7,9 +7,9 @@ import { type ButtonInteraction, type CommandInteraction, type TextChannel } fro
 import { type Language } from 'i18n/constants';
 import { removeTicketUsers } from './ticketUser.js';
 
-export type TicketCloseAction = 'accept' | 'reject' | 'delete';
+export type TicketAction = 'new' | 'inprogress' | 'done' | 'delete';
 
-export async function closeTicket (interaction: CommandInteraction<'cached'> | ButtonInteraction<'cached'>, language: Language, action: TicketCloseAction, _ticket?: TicketSelectModel): Promise<void> {
+export async function closeTicket (interaction: CommandInteraction<'cached'> | ButtonInteraction<'cached'>, language: Language, action: TicketAction, _ticket?: TicketSelectModel): Promise<void> {
   const channel = interaction.channel ?? interaction.guild.channels.cache.get(interaction.channelId);
 
   if (channel == null) {
@@ -40,7 +40,6 @@ export async function closeTicket (interaction: CommandInteraction<'cached'> | B
 
   const category = await dbTicketCategoryService.select(ticket.categoryId);
   if (category == null) return;
-
   await dbTicketService.setTicketStatus(interaction.channelId, action);
 
   await removeTicketUsers(channel);

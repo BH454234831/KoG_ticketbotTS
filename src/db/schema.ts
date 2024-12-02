@@ -4,7 +4,7 @@ import { bigintString, bytea, createdAtTimestampDate, deletedAtTimestampDate, up
 
 export const languageEnum = pgEnum('language', languages);
 
-export const ticketStatusValues = ['open', 'accept', 'reject', 'delete'] as const;
+export const ticketStatusValues = ['new', 'inprogress', 'done', 'delete'] as const;
 export type TicketStatus = typeof ticketStatusValues[number];
 export const ticketStatusEnum = pgEnum('ticket_status', ticketStatusValues);
 
@@ -41,7 +41,7 @@ export const ticketTable = pgTable('ticket', {
   userId: bigintString('user_id').notNull(),
   language: languageEnum('language').notNull(),
   categoryId: bigintString('category').notNull(),
-  status: ticketStatusEnum('ticket_status').notNull().default('open'),
+  status: ticketStatusEnum('ticket_status').notNull().default('new'),
 
   createdAt: createdAtTimestampDate,
   updatedAt: updatedAtTimestampDate,

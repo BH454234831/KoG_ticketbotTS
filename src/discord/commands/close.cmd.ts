@@ -1,6 +1,6 @@
 import { dbTicketService } from 'db/services';
 import { ApplicationCommandOptionType, CommandInteraction } from 'discord.js';
-import { closeTicket } from 'discord/actions/closeTicket';
+import { closeTicket, TicketAction } from 'discord/actions/closeTicket';
 import { defaultTicketPermissions } from 'discord/constants';
 import { PermissionGuard } from 'discord/guards';
 import { Discord, Guard, Slash, SlashChoice, SlashOption } from 'discordx';
@@ -15,14 +15,14 @@ export class CloseCommand {
   })
   @Guard(PermissionGuard(defaultTicketPermissions))
   public async closeTicket (
-    @SlashChoice('accept', 'reject', 'delete')
+    @SlashChoice('done', 'delete')
     @SlashOption({
       name: 'action',
       description: 'Action',
       required: false,
       type: ApplicationCommandOptionType.String,
     })
-      action: 'accept' | 'reject' | 'delete' | undefined,
+      action: 'done' | 'delete' | undefined ,
 
       interaction: CommandInteraction<'cached'>,
   ): Promise<void> {
@@ -33,7 +33,6 @@ export class CloseCommand {
       await interaction.editReply({ content: 'Ticket not found.' });
       return;
     }
-
-    await closeTicket(interaction, ticket.language, action ?? 'delete', ticket);
+    await closeTicket(interaction, ticket.language, action ?? 'done', ticket);
   }
 }

@@ -59,7 +59,7 @@ export async function createTicketChannel (guild: Guild, categoryId: string, lan
   }
 
   const buttonRows = createButtons([
-    { id: `thread@${language}@close`, label: i18n.__('{{thread_buttons.close.labels}}', undefined, language), emoji: '🔒' },
+    { id: `thread@${language}@close`, label: i18n.__('{{thread_buttons.close.labels}}', undefined, 'en'), emoji: '🔒' },
   ]);
 
   const ticketMessage = await thread.send({
