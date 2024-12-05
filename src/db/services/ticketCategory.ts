@@ -69,7 +69,7 @@ export class DbTicketCategoryService {
       .execute();
   }
 
-  public async updateWelcome (categoryId: string, language: Language, welcomes: Record<Language, string>): Promise<void> {
+  public async updateWelcome (categoryId: string, welcomes: Record<Language, string>): Promise<void> {
     await this.db
       .update(ticketCategoryTable)
       .set({ welcome: welcomes })

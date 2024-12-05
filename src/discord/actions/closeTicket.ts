@@ -3,14 +3,14 @@ import { dbTicketCategoryService, dbTicketService, type TicketSelectModel } from
 import { logger } from 'logger';
 import { resolveChannelMemberData, resolveInteractionMemberData } from 'utils/discord/resolve';
 import discordTranscripts from 'discord-html-transcripts';
-import { ThreadChannel, type ButtonInteraction, type CommandInteraction, type TextChannel } from 'discord.js';
+import { type ThreadChannel, type ButtonInteraction, type CommandInteraction, type TextChannel } from 'discord.js';
 import { type Language } from 'i18n/constants';
 import { removeTicketUsers } from './ticketUser.js';
 
 export type TicketAction = 'new' | 'inprogress' | 'done' | 'delete';
 
 export async function closeTicket (interaction: CommandInteraction<'cached'> | ButtonInteraction<'cached'>, language: Language, action: TicketAction, _ticket?: TicketSelectModel): Promise<void> {
-  const channel = interaction.channel ?? interaction.guild.channels.cache.get(interaction.channelId) ;
+  const channel = interaction.channel ?? interaction.guild.channels.cache.get(interaction.channelId);
 
   if (channel == null) {
     logger.info(`[CloseTicketButton][closeTicketCancel] channel not found: ${interaction.channelId}`);
@@ -86,8 +86,7 @@ export async function closeTicket (interaction: CommandInteraction<'cached'> | B
   await channel.delete();
 }
 
-export async function closeTicketByThread(channel:ThreadChannel, language: Language, action: TicketAction, _ticket?: TicketSelectModel): Promise<void> {
-
+export async function closeTicketByThread (channel: ThreadChannel, language: Language, action: TicketAction, _ticket?: TicketSelectModel): Promise<void> {
   if (!channel.isThread()) {
     logger.info(`[CloseTicketButton][closeTicketCancel] channel is not thread: ${channel.id}`);
     return;
@@ -132,7 +131,7 @@ export async function closeTicketByThread(channel:ThreadChannel, language: Langu
         },
         {
           name: 'Deleted by',
-          value: `Auto delete system`,
+          value: 'Auto delete system',
           inline: false,
         },
         {

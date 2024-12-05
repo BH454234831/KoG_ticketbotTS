@@ -1,6 +1,6 @@
 import { dbTicketService } from 'db/services';
 import { ApplicationCommandOptionType, CommandInteraction } from 'discord.js';
-import { closeTicket, TicketAction } from 'discord/actions/closeTicket';
+import { closeTicket } from 'discord/actions/closeTicket';
 import { defaultTicketPermissions } from 'discord/constants';
 import { PermissionGuard } from 'discord/guards';
 import { Discord, Guard, Slash, SlashChoice, SlashOption } from 'discordx';
@@ -22,7 +22,7 @@ export class CloseCommand {
       required: false,
       type: ApplicationCommandOptionType.String,
     })
-      action: 'done' | 'delete' | undefined ,
+      action: 'done' | 'delete' | undefined,
 
       interaction: CommandInteraction<'cached'>,
   ): Promise<void> {

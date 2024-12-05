@@ -1,7 +1,8 @@
 import { dbTicketCategoryService } from 'db/services';
 import { ApplicationCommandOptionType, ChannelType, CommandInteraction, PermissionFlagsBits, type Role, TextChannel } from 'discord.js';
 import { categoryAutocomplete } from 'discord/autocomplete';
-import { Discord, Slash, SlashGroup, SlashOption } from 'discordx';
+import { Discord, Slash, SlashChoice, SlashGroup, SlashOption } from 'discordx';
+import { Language, languages } from 'i18n/constants';
 import { translateService } from 'services';
 
 @Discord()
@@ -11,6 +12,7 @@ import { translateService } from 'services';
   defaultMemberPermissions: PermissionFlagsBits.ManageThreads,
   dmPermission: false,
 })
+
 @SlashGroup('categories')
 export class CategoriesCommands {
   @Slash({
@@ -18,7 +20,7 @@ export class CategoriesCommands {
     description: 'List categories',
   })
   public async listCategories (interaction: CommandInteraction): Promise<void> {
-    await interaction.deferReply({ephemeral: true});
+    await interaction.deferReply({ ephemeral: true });
 
     const categories = await dbTicketCategoryService.selectAll();
 
@@ -53,7 +55,7 @@ export class CategoriesCommands {
 
       interaction: CommandInteraction,
   ): Promise<void> {
-    await interaction.deferReply({ephemeral: true});
+    await interaction.deferReply({ ephemeral: true });
 
     const category = await dbTicketCategoryService.select(categoryId);
     if (category == null) {
@@ -151,7 +153,7 @@ export class CategoriesCommands {
 
       interaction: CommandInteraction<'cached' | 'raw'>,
   ): Promise<void> {
-    await interaction.deferReply({ephemeral: true});
+    await interaction.deferReply({ ephemeral: true });
 
     const names = await translateService.translateToAll(nameEn);
     const welcomes = welcomeEn != null ? await translateService.translateToAll(welcomeEn) : null;
@@ -186,7 +188,7 @@ export class CategoriesCommands {
 
       interaction: CommandInteraction<'cached'>,
   ): Promise<void> {
-    await interaction.deferReply({ephemeral: true});
+    await interaction.deferReply({ ephemeral: true });
 
     const category = await dbTicketCategoryService.select(categoryId);
     if (category == null) {
@@ -201,5 +203,100 @@ export class CategoriesCommands {
     await interaction.editReply({
       content: `Category ${category.name.en} deleted`,
     });
+  }
+}
+@Discord()
+@SlashGroup({
+  name: 'localisation',
+  root: 'categories',
+  description: 'Manage categories localisation',
+})
+
+@SlashGroup('localisation', 'categories')
+export class CategoriesLocalisationCommands {
+  @Slash({
+    name: 'setwelcome',
+    description: 'change welcome message localisation',
+  })
+  public async setWelcome (
+    @SlashOption({
+      name: 'category',
+      description: 'Category',
+      required: true,
+      type: ApplicationCommandOptionType.String,
+      autocomplete: categoryAutocomplete,
+    })
+      categoryId: string,
+      @SlashChoice(...languages)
+      @SlashOption({
+        name: 'language',
+        description: 'language',
+        required: true,
+        type: ApplicationCommandOptionType.String,
+      })
+      lang: Language,
+      @SlashOption({
+        name: 'text',
+        description: 'text',
+        required: true,
+        type: ApplicationCommandOptionType.String,
+        maxLength: 1900,
+      })
+      text: string,
+      interaction: CommandInteraction<'cached'>,
+  ): Promise<void> {
+    await interaction.deferReply({ ephemeral: true });
+
+    const category = await dbTicketCategoryService.select(categoryId);
+    if (category == null) return;
+
+    if (category.welcome == null) {
+      const welcomes = await translateService.translateToAll(text, lang);
+      await dbTicketCategoryService.updateWelcome(categoryId, welcomes);
+      await interaction.reply('Welcome message updated and translated to all languages succesfuly');
+    } else {
+      await dbTicketCategoryService.updateWelcome(categoryId, { ...category.welcome, [lang]: text });
+      await interaction.reply('Welcome message updated succesfuly');
+    }
+  }
+
+  @Slash({
+    name: 'setname',
+    description: 'change welcome message localisation',
+  })
+  public async setName (
+    @SlashOption({
+      name: 'category',
+      description: 'Category',
+      required: true,
+      type: ApplicationCommandOptionType.String,
+      autocomplete: categoryAutocomplete,
+    })
+      categoryId: string,
+      @SlashChoice(...languages)
+      @SlashOption({
+        name: 'language',
+        description: 'language',
+        required: true,
+        type: ApplicationCommandOptionType.String,
+      })
+      lang: Language,
+      @SlashOption({
+        name: 'text',
+        description: 'text',
+        required: true,
+        type: ApplicationCommandOptionType.String,
+        maxLength: 60,
+      })
+      text: string,
+      interaction: CommandInteraction<'cached'>,
+  ): Promise<void> {
+    await interaction.deferReply({ ephemeral: true });
+
+    const category = await dbTicketCategoryService.select(categoryId);
+    if (category == null) return;
+
+    await dbTicketCategoryService.updateName(categoryId, lang, text);
+    await interaction.reply('Welcome message updated succesfuly');
   }
 }
