@@ -8,6 +8,7 @@
     "emitDecoratorMetadata": true,
     "esModuleInterop": true,
     "lib": ["ESNext", "ESNext.Disposable", "ESNext.Intl", "ESNext.Array"],
+    "plugins": [{ "transform": "typescript-transform-paths" }],
     "skipLibCheck": true,
     "noErrorTruncation": true,
 
@@ -25,7 +26,16 @@
     "allowSyntheticDefaultImports": true,
 
     "baseUrl": "./src",
-    "outDir": "./dist"
+    "outDir": "./dist",
+    
+    "paths": {
+      "#config": ["./config.js"],
+      "#logger": ["./logger.js"],
+      "#db/*": ["./db/*"],
+      "#discord/*": ["./discord/*"],
+      "#services/*": ["./services/*"],
+      "#utils/*": ["./utils/*"],
+    },
   },
   "exclude": [
     "node_modules",

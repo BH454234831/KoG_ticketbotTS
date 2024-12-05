@@ -1,11 +1,11 @@
-import { config } from 'config';
+import { config } from './config.js';
 import { GatewayIntentBits, InteractionType } from 'discord.js';
 import { Client } from 'discordx';
-import { consoleWinstonTransport, fileErrorWinstonTransport, logger } from 'logger';
+import { consoleWinstonTransport, fileErrorWinstonTransport, logger } from './logger.js';
 import { dirname, importx } from '@discordx/importer';
 import { register } from 'tsx/esm/api';
 import 'reflect-metadata';
-import { interactionReplyError } from 'utils/discord/interaction';
+import { interactionReplyError } from './utils/discord/interaction.js';
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
 const __dirname = dirname(import.meta.url);

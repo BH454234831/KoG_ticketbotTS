@@ -39,7 +39,7 @@ export const envPaths: readonly string[] = [
   path.resolve(projectDir, '.env'),
 ];
 
-function loadConfigDotenv (...envPaths: readonly string[]): { config: Record<string, string>; envPath: string } | null {
+function loadConfigDotenv (envPaths: readonly string[]): { config: Record<string, string>; envPath: string } | null {
   for (const envPath of envPaths) {
     try {
       console.info('Loading env file', envPath);
@@ -53,12 +53,16 @@ function loadConfigDotenv (...envPaths: readonly string[]): { config: Record<str
 }
 
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
-export function loadConfig (...envPaths: readonly string[]) {
-  const envConfig = loadConfigDotenv(...envPaths);
+export function loadConfig (envPaths: readonly string[], overrides: Record<string, string | undefined> = {}) {
+  const envConfig = loadConfigDotenv(envPaths);
   if (envConfig == null) {
     throw new Error(`No env file found for ENV=${NODE_ENV != null ? `'${NODE_ENV}'` : 'null'}`);
   }
-  // Object.assign(envConfig, process.env);
+  for (const [key, value] of Object.entries(overrides)) {
+    if (value != null) {
+      envConfig.config[key] = value;
+    }
+  }
 
   const rawConfigData = envShape.safeParse(envConfig.config);
 
@@ -80,12 +84,12 @@ export function loadConfig (...envPaths: readonly string[]) {
   } as const;
 }
 
-export const { config, envPath: configPath } = loadConfig(...envPaths);
+export const { config, envPath: configPath } = loadConfig(envPaths, process.env);
 
-export function reloadConfig (...paths: readonly string[]): void {
+export function reloadConfig (paths: readonly string[]): void {
   console.log('Reloading config');
   try {
-    const newConfig = loadConfigDotenv(...paths);
+    const newConfig = loadConfigDotenv(paths);
     if (newConfig == null) {
       console.error(new Error(`[reloadConfig] No env files found for paths ${paths.join(', ')}`));
       return;
@@ -100,5 +104,5 @@ console.log(`Watching env file ${configPath}`);
 export const configWatcher = watch(configPath, { persistent: false });
 configWatcher.on('change', (eventType) => {
   console.log(`Env file ${configPath} changed, type: ${eventType}`);
-  reloadConfig(configPath);
+  reloadConfig([configPath]);
 });
