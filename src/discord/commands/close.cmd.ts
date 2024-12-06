@@ -1,20 +1,33 @@
 import { dbTicketService } from 'db/services';
-import { ApplicationCommandOptionType, CommandInteraction } from 'discord.js';
+import { ApplicationCommandOptionType, ApplicationCommandType, CommandInteraction, type ContextMenuCommandInteraction } from 'discord.js';
 import { closeTicket } from 'discord/actions/closeTicket';
 import { defaultTicketPermissions } from 'discord/constants';
 import { PermissionGuard } from 'discord/guards';
-import { Discord, Guard, Slash, SlashChoice, SlashOption } from 'discordx';
+import { Discord, Guard, SlashChoice, SlashOption } from 'discordx';
+import { TranslatableContextMenu, TranslatableSlash } from 'i18n/discord';
 
 @Discord()
 export class CloseCommand {
-  @Slash({
+  public static async closeTicket (interaction: CommandInteraction<'cached'> | ContextMenuCommandInteraction<'cached'>, action: 'done' | 'delete' | undefined): Promise<void> {
+    await interaction.deferReply({ ephemeral: true });
+
+    const ticket = await dbTicketService.getTicketByChannelId(interaction.channelId);
+    if (ticket == null) {
+      await interaction.editReply({ content: 'Ticket not found.' });
+      return;
+    }
+    await closeTicket(interaction, ticket.language, action ?? 'done', ticket);
+  }
+
+  @TranslatableSlash({
     name: 'close',
     description: 'Close a ticket',
+    localeKey: 'commands.close',
     defaultMemberPermissions: defaultTicketPermissions,
     dmPermission: false,
   })
   @Guard(PermissionGuard(defaultTicketPermissions))
-  public async closeTicket (
+  public async closeTicketCommand (
     @SlashChoice('done', 'delete')
     @SlashOption({
       name: 'action',
@@ -26,13 +39,26 @@ export class CloseCommand {
 
       interaction: CommandInteraction<'cached'>,
   ): Promise<void> {
-    await interaction.deferReply({ ephemeral: true });
+    await CloseCommand.closeTicket(interaction, action);
+  }
 
-    const ticket = await dbTicketService.getTicketByChannelId(interaction.channelId);
-    if (ticket == null) {
-      await interaction.editReply({ content: 'Ticket not found.' });
-      return;
-    }
-    await closeTicket(interaction, ticket.language, action ?? 'done', ticket);
+  @TranslatableContextMenu({
+    name: 'Close ticket',
+    type: ApplicationCommandType.Message,
+    localeKey: 'commands.close.done',
+    localeUseDescription: true,
+  })
+  public async closeTicketContextMenu (interaction: ContextMenuCommandInteraction<'cached'>): Promise<void> {
+    await CloseCommand.closeTicket(interaction, 'done');
+  }
+
+  @TranslatableContextMenu({
+    name: 'Delete ticket (spam)',
+    type: ApplicationCommandType.Message,
+    localeKey: 'commands.close.delete',
+    localeUseDescription: true,
+  })
+  public async deleteTicketContextMenu (interaction: ContextMenuCommandInteraction<'cached'>): Promise<void> {
+    await CloseCommand.closeTicket(interaction, 'delete');
   }
 }

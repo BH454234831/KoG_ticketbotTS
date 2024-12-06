@@ -1,6 +1,7 @@
-import { dbTicketCategoryService, dbTicketService } from 'db/services';
+import { logger } from '#logger';
+import { dbTicketCategoryService } from 'db/services';
 import { ButtonInteraction } from 'discord.js';
-import { closeTicket, closeTicketByThread } from 'discord/actions/closeTicket';
+import { closeTicketByThread } from 'discord/actions/closeTicket';
 import { createTicket } from 'discord/actions/createTicket';
 import { TooOldGuard } from 'discord/guards';
 import { ButtonComponent, Discord, Guard } from 'discordx';
@@ -19,16 +20,20 @@ export class OpenTicketButtons {
     const [, language, categoryId] = interaction.customId.split('@') as [string, Language, string];
 
     const { thread } = await createTicket(interaction.guild, categoryId, language, interaction.user.id);
-    const category = await dbTicketCategoryService.select(categoryId)
-    
+    const category = await dbTicketCategoryService.select(categoryId);
+
     await interaction.editReply({
       content: i18n.__('{{category_buttons.success}}', { channelId: thread.id }, language),
     });
     if (category == null) return;
-    if (category.autodeleteMinutes) {
-      setTimeout(async() =>{
-        await closeTicketByThread(thread, language, 'done')
-      }, category.autodeleteMinutes * 60 * 1000)
+    if (category.autodeleteMinutes != null) {
+      // eslint-disable-next-line @typescript-eslint/no-misused-promises
+      setTimeout(() => {
+        closeTicketByThread(thread, language, 'done')
+          .catch((err) => {
+            logger.error(err);
+          });
+      }, category.autodeleteMinutes * 60 * 1000);
     }
   }
 }

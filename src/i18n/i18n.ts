@@ -267,6 +267,10 @@ export class I18n<Langs extends string = string, Keys extends string = string> {
     return this._get(key, lang) ?? key;
   }
 
+  public has (key: string): boolean {
+    return this.locales[key] != null;
+  }
+
   public _getPlural (key: string, rule: number, lang?: Langs): string | undefined {
     const val = this.locales[key]?.[lang ?? this.defaultLang] ?? this.locales[key]?.[this.defaultLang];
     if (val == null) return undefined;

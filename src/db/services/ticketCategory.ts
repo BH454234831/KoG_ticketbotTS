@@ -38,11 +38,14 @@ export class DbTicketCategoryService {
     return category ?? null;
   }
 
-  public async selectAll (): Promise<TicketCategorySelectNodel[]> {
+  public async selectAll (options?: { exceptCategoryId?: bigint }): Promise<TicketCategorySelectNodel[]> {
     return await this.db
       .select()
       .from(ticketCategoryTable)
-      .where(isNull(ticketCategoryTable.deletedAt))
+      .where(and(
+        isNull(ticketCategoryTable.deletedAt),
+        options?.exceptCategoryId != null ? not(eq(ticketCategoryTable.id, options.exceptCategoryId)) : undefined,
+      ))
       .execute();
   }
 

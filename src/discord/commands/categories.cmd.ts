@@ -1,8 +1,9 @@
 import { dbTicketCategoryService } from 'db/services';
 import { ApplicationCommandOptionType, ChannelType, CommandInteraction, PermissionFlagsBits, type Role, TextChannel } from 'discord.js';
 import { categoryAutocomplete } from 'discord/autocomplete';
-import { Discord, Slash, SlashChoice, SlashGroup, SlashOption } from 'discordx';
+import { Discord, SlashChoice, SlashGroup, SlashOption } from 'discordx';
 import { Language, languages } from 'i18n/constants';
+import { TranslatableSlash } from 'i18n/discord';
 import { translateService } from 'services';
 
 @Discord()
@@ -15,9 +16,10 @@ import { translateService } from 'services';
 
 @SlashGroup('categories')
 export class CategoriesCommands {
-  @Slash({
+  @TranslatableSlash({
     name: 'list',
     description: 'List categories',
+    localeKey: 'commands.categories.list',
   })
   public async listCategories (interaction: CommandInteraction): Promise<void> {
     await interaction.deferReply({ ephemeral: true });
@@ -39,9 +41,10 @@ export class CategoriesCommands {
     });
   }
 
-  @Slash({
+  @TranslatableSlash({
     name: 'info',
     description: 'Get category info',
+    localeKey: 'commands.categories.info',
   })
   public async getCategoryInfo (
     @SlashOption({
@@ -102,9 +105,10 @@ export class CategoriesCommands {
     });
   }
 
-  @Slash({
+  @TranslatableSlash({
     name: 'create',
     description: 'Create category',
+    localeKey: 'commands.categories.create',
   })
   public async createCategory (
     @SlashOption({
@@ -172,9 +176,10 @@ export class CategoriesCommands {
     });
   }
 
-  @Slash({
+  @TranslatableSlash({
     name: 'delete',
     description: 'Delete category',
+    localeKey: 'commands.categories.delete',
   })
   public async deleteCategory (
     @SlashOption({
@@ -214,9 +219,10 @@ export class CategoriesCommands {
 
 @SlashGroup('localisation', 'categories')
 export class CategoriesLocalisationCommands {
-  @Slash({
+  @TranslatableSlash({
     name: 'setwelcome',
     description: 'change welcome message localisation',
+    localeKey: 'commands.categories.setwelcome',
   })
   public async setWelcome (
     @SlashOption({
@@ -260,9 +266,10 @@ export class CategoriesLocalisationCommands {
     }
   }
 
-  @Slash({
+  @TranslatableSlash({
     name: 'setname',
     description: 'change welcome message localisation',
+    localeKey: 'commands.categories.setname',
   })
   public async setName (
     @SlashOption({

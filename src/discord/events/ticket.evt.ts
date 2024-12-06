@@ -92,9 +92,9 @@ export class TicketEvents {
   @On({ event: 'threadDelete' })
   public async threadDelete ([thread]: ArgsOf<'threadDelete'>): Promise<void> {
     if (thread.type !== ChannelType.PrivateThread) return;
-    const ticket = await dbTicketService.getTicketByChannelId(thread.id)
-    if (!ticket) return;
-    if (ticket.status == 'done') return;
+    const ticket = await dbTicketService.getTicketByChannelId(thread.id);
+    if (ticket == null) return;
+    if (ticket.status === 'done') return;
     await dbTicketService.setTicketStatus(thread.id, 'delete');
   }
 
@@ -110,8 +110,8 @@ export class TicketEvents {
     const ticket = await dbTicketService.getTicketByChannelId(message.channel.id);
     if (ticket == null) return;
 
-    if (ticket.status == 'new') {
-      dbTicketService.setTicketStatus(message.channel.id, 'inprogress')
+    if (ticket.status === 'new') {
+      await dbTicketService.setTicketStatus(message.channel.id, 'inprogress');
     }
     const member = await resolveMemberData(message.guild, message.author.id);
 

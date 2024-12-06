@@ -52,6 +52,17 @@ export class DbTicketService {
     return ticket ?? null;
   }
 
+  public async getTickets (options?: { exceptChannelId?: string }): Promise<TicketSelectModel[]> {
+    const tickets = await this.db
+      .select()
+      .from(ticketTable)
+      .where(and(
+        options?.exceptChannelId != null ? not(eq(ticketTable.channelId, options.exceptChannelId)) : undefined,
+      ))
+      .execute();
+    return tickets;
+  }
+
   public async getOpenTickets (): Promise<TicketSelectModel[]> {
     const tickets = await this.db
       .select()
@@ -59,7 +70,7 @@ export class DbTicketService {
       .where(or(
         eq(ticketTable.status, 'new'),
         eq(ticketTable.status, 'inprogress'),
-       ))
+      ))
       .execute();
 
     return tickets;
@@ -77,7 +88,7 @@ export class DbTicketService {
         (or(
           eq(ticketTable.status, 'new'),
           eq(ticketTable.status, 'inprogress'),
-         ))
+        )),
       ))
       .execute();
 

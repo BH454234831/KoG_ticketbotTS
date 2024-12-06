@@ -43,5 +43,4 @@ export class CloseTicketButton {
     await interaction.deferReply({ ephemeral: true });
     await closeTicket(interaction, language, action);
   }
-    
 }
